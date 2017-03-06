@@ -8,6 +8,18 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [又见KeepAlive](http://blog.sina.com.cn/s/blog_e59371cc0102ux5w.html)
 
+* [Raft：Understandable Distributed Consensus 可视化的分布式一致性RAFT算法](http://thesecretlivesofdata.com/raft/)
+
+* [TCP 的那些事儿](http://get.ftqq.com/295.get)
+
+* [让你完全理解base64是怎么回事](https://segmentfault.com/a/1190000004533485)
+
+
+
+#### 数据结构算法
+
+* [【干货】美团推荐算法实践](http://mp.weixin.qq.com/s?__biz=MjM5ODIzNDQ3Mw==&mid=202944919&idx=1&sn=98d617e318420b0bcf451d4c3def31ce)
+
 
 #### 正则表达式
 
@@ -20,3 +32,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 #### 数据库
 
 * [十步完全理解 SQL](http://blog.jobbole.com/55086/)
+
+* [MySQL参数说明](http://ourmysql.com/archives/411?f=wb)
+
+* [微博的MySQL数据库优化实践经验](http://dockone.io/article/1106)
