@@ -14,6 +14,10 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [让你完全理解base64是怎么回事](https://segmentfault.com/a/1190000004533485)
 
+* [Socks5协议中文文档](http://blog.csdn.net/testcs_dn/article/details/7915505)
+
+* [Git Community Book 中文版](http://gitbook.liuhui998.com/index.html)
+
 
 
 #### 数据结构算法
@@ -36,3 +40,15 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [MySQL参数说明](http://ourmysql.com/archives/411?f=wb)
 
 * [微博的MySQL数据库优化实践经验](http://dockone.io/article/1106)
+
+* [Mysql建表与索引使用规范整理](http://blog.csdn.net/jenminzhang/article/details/9702345)
+
+* [MYSQL性能优化的最佳20+条经验](http://coolshell.cn/articles/1846.html)
+
+
+
+#### 架构设计
+
+* [微服务架构下的数据一致性：可靠事件模式](http://www.howardliu.cn/micro-services/data-consistency-in-micro-services-reliable-event/)
+
+
