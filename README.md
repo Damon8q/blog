@@ -47,8 +47,12 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 
 
-#### 架构设计
+#### 架构(编码)设计
 
 * [微服务架构下的数据一致性：可靠事件模式](http://www.howardliu.cn/micro-services/data-consistency-in-micro-services-reliable-event/)
+
+* [写扩展性好的代码：函数](http://blog.jobbole.com/107442/)
+
+
 
 
