@@ -55,4 +55,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 
 
+#### Golang
+
+* [golang IO包的妙用](http://www.jianshu.com/p/8c33f7c84509#)
+
 
