@@ -59,4 +59,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [golang IO包的妙用](http://www.jianshu.com/p/8c33f7c84509#)
 
+* [Golang 垃圾回收剖析](http://legendtkl.com/2017/04/28/golang-gc/)
+
+* [How does the golang scheduler work?](https://www.quora.com/How-does-the-golang-scheduler-work/answer/Ian-Lance-Taylor)
+
 
