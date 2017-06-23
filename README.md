@@ -45,6 +45,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [MYSQL性能优化的最佳20+条经验](http://coolshell.cn/articles/1846.html)
 
+* [我必须得告诉大家的MySQL优化原理](http://www.jianshu.com/p/d7665192aaaf)
+
 
 
 #### 架构(编码)设计
