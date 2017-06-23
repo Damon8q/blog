@@ -20,6 +20,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Protocol Buffer 序列化原理解析](http://blog.csdn.net/carson_ho/article/details/70568606)
 
+* [Etcd 架构与实现解析](http://jolestar.com/etcd-architecture/)
+
 
 
 #### 数据结构算法
