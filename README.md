@@ -18,6 +18,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Git Community Book 中文版](http://gitbook.liuhui998.com/index.html)
 
+* [Protocol Buffer 序列化原理解析](https://mp.weixin.qq.com/s/YLQKkH_bV99o5U65iOGFpQ)
+
 
 
 #### 数据结构算法
