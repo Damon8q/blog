@@ -59,7 +59,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [写扩展性好的代码：函数](http://blog.jobbole.com/107442/)
 
-
+* [浅谈分布式消息技术 Kafka](http://www.linkedkeeper.com/detail/blog.action?bid=1016)
 
 #### Golang
 
