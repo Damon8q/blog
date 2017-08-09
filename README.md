@@ -61,6 +61,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [浅谈分布式消息技术 Kafka](http://www.linkedkeeper.com/detail/blog.action?bid=1016)
 
+* [缓存穿透，缓存击穿，缓存雪崩解决方案分析](http://blog.csdn.net/zeb_perfect/article/details/54135506)
+
 #### Golang
 
 * [golang IO包的妙用](http://www.jianshu.com/p/8c33f7c84509#)
