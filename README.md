@@ -14,6 +14,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [让你完全理解base64是怎么回事](https://segmentfault.com/a/1190000004533485)
 
+* [socks5英文规范(rfc 1928)](https://www.ietf.org/rfc/rfc1928.txt)
+
 * [Socks5协议中文文档](http://blog.csdn.net/testcs_dn/article/details/7915505)
 
 * [Git Community Book 中文版](http://gitbook.liuhui998.com/index.html)
