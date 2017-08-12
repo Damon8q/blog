@@ -18,6 +18,10 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Socks5协议中文文档](http://blog.csdn.net/testcs_dn/article/details/7915505)
 
+* [HTTP2 协议](https://tools.ietf.org/html/rfc7540)
+
+* [HTTP2 协议中文版]()
+
 * [Git Community Book 中文版](http://gitbook.liuhui998.com/index.html)
 
 * [Protocol Buffer 序列化原理解析](http://blog.csdn.net/carson_ho/article/details/70568606)
