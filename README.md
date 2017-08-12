@@ -20,7 +20,9 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [HTTP2 协议](https://tools.ietf.org/html/rfc7540)
 
-* [HTTP2 协议中文版]()
+* [HTTP2 协议中文版](https://github.com/nange/blog/blob/master/rfc7540.txt)
+
+* [HTTP2 帧基础知识以及Header、CONTINUATION、DATA帧相关资料](http://www.cnblogs.com/ghj1976/p/4581426.html)
 
 * [Git Community Book 中文版](http://gitbook.liuhui998.com/index.html)
 
