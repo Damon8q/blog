@@ -30,7 +30,9 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Etcd 架构与实现解析](http://jolestar.com/etcd-architecture/)
 
-* [字符编码笔记：ASCII，Unicode和UTF-8和大小端](http://www.ruanyifeng.com/blog/2007/10/ascii_unicode_and_utf-8.html)
+* [字符编码笔记：ASCII，Unicode和UTF-8](http://www.ruanyifeng.com/blog/2007/10/ascii_unicode_and_utf-8.html)
+
+* [理解字节序](http://www.ruanyifeng.com/blog/2016/11/byte-order.html)
 
 
 
