@@ -12,7 +12,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [TCP 的那些事儿](http://get.ftqq.com/295.get)
  
-* [HTTPS工作原理和TCP握手机制](http://www.cnblogs.com/ttltry-air/archive/2012/08/20/2647898.html)
+* [HTTPS工作原理和TCP握手机制](http://www.cnblogs.com/ttltry-air/archive/2012/08/20/2647898.html)
  
 * [让你完全理解base64是怎么回事](https://segmentfault.com/a/1190000004533485)
 
