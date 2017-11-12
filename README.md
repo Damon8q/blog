@@ -11,7 +11,9 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [Raft：Understandable Distributed Consensus 可视化的分布式一致性RAFT算法](http://thesecretlivesofdata.com/raft/)
 
 * [TCP 的那些事儿](http://get.ftqq.com/295.get)
-
+ 
+* [HTTPS工作原理和TCP握手机制](http://www.cnblogs.com/ttltry-air/archive/2012/08/20/2647898.html)
+ 
 * [让你完全理解base64是怎么回事](https://segmentfault.com/a/1190000004533485)
 
 * [socks5英文规范(rfc 1928)](https://www.ietf.org/rfc/rfc1928.txt)
