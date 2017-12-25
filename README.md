@@ -88,3 +88,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [How does the golang scheduler work?](https://www.quora.com/How-does-the-golang-scheduler-work/answer/Ian-Lance-Taylor)
 
 
+#### 其他
+* [mac－改造你的terminal](https://www.jianshu.com/p/bb1c97269b11)
+
+
+
