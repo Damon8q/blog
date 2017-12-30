@@ -86,8 +86,10 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [Golang 垃圾回收剖析](http://legendtkl.com/2017/04/28/golang-gc/)
 
 * [How does the golang scheduler work?](https://www.quora.com/How-does-the-golang-scheduler-work/answer/Ian-Lance-Taylor)
- 
+
 * [Go数据科学 Cheat Sheet](https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/)
+
+* [2017年超有价值的Golang文章](http://colobu.com/2017/12/28/top-golang-articles-of-2017/)
  
 
 #### 其他
