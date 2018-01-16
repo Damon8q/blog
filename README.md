@@ -67,6 +67,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [我必须得告诉大家的MySQL优化原理](http://www.jianshu.com/p/d7665192aaaf)
 
+* [MySQL数字类型int与tinyint、float与decimal如何选择](http://seanlook.com/2016/04/29/mysql-numeric-int-float/)
+
 
 
 #### 架构(编码)设计
