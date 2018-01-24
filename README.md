@@ -69,6 +69,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [MySQL数字类型int与tinyint、float与decimal如何选择](http://seanlook.com/2016/04/29/mysql-numeric-int-float/)
 
+* [Mysql Tips -- 检索每个分组的最后一条记录](http://blog.text.wiki/2015/04/03/retrieve-the-last-record-in-each-group.html)
+
 
 
 #### 架构(编码)设计
