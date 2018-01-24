@@ -71,6 +71,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Mysql Tips -- 检索每个分组的最后一条记录](http://blog.text.wiki/2015/04/03/retrieve-the-last-record-in-each-group.html)
 
+* [Join的实现原理及优化思路](http://www.cnblogs.com/ggjucheng/archive/2012/11/15/2772148.html)
+
 
 
 #### 架构(编码)设计
