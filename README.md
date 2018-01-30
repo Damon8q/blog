@@ -3,6 +3,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 
 #### 协议操作系统
+* [关于TCP/IP，必知必会的十个问题](https://mp.weixin.qq.com/s/qn5fw8yHvjBou6Ps2Xo9Lw)
 
 * [高性能网络编程-TCP系列](http://blog.csdn.net/column/details/high-perf-network.html)
 
