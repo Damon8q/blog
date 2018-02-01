@@ -100,6 +100,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [Go数据科学 Cheat Sheet](https://www.cheatography.com/chewxy/cheat-sheets/data-science-in-go-a/)
 
 * [2017年超有价值的Golang文章](http://colobu.com/2017/12/28/top-golang-articles-of-2017/)
+
+* [Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题](https://imhanjm.com/2017/08/27/go%E5%A6%82%E4%BD%95%E7%B2%BE%E7%A1%AE%E8%AE%A1%E7%AE%97%E5%B0%8F%E6%95%B0-decimal%E7%A0%94%E7%A9%B6/)
  
 
 #### 其他
