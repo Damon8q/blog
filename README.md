@@ -103,6 +103,10 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Go如何精确计算小数-Decimal研究-Tidb MyDecimal问题](https://imhanjm.com/2017/08/27/go%E5%A6%82%E4%BD%95%E7%B2%BE%E7%A1%AE%E8%AE%A1%E7%AE%97%E5%B0%8F%E6%95%B0-decimal%E7%A0%94%E7%A9%B6/)
  
+ * [写Go代码时遇到的那些问题[第1期]](http://tonybai.com/2018/01/13/the-problems-i-encountered-when-writing-go-code-issue-1st/)
+ 
+ * [写Go代码时遇到的那些问题[第2期]](http://tonybai.com/2018/01/27/the-problems-i-encountered-when-writing-go-code-issue-2nd/)
+
 
 #### 其他
 * [mac－改造你的terminal](https://www.jianshu.com/p/bb1c97269b11)
