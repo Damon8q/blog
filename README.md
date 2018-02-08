@@ -74,6 +74,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Join的实现原理及优化思路](http://www.cnblogs.com/ggjucheng/archive/2012/11/15/2772148.html)
 
+* [Redis探索之路](http://mp.weixin.qq.com/s/hfbTRWaGSZfed4I2Op0O-w)
 
 
 #### 架构(编码)设计
