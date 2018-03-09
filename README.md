@@ -39,6 +39,9 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [理解字节序](http://www.ruanyifeng.com/blog/2016/11/byte-order.html)
 
+* [技术干货|深入理解flannel网络](https://www.kubernetes.org.cn/3682.html)
+
+* [vxlan 协议原理简介](http://cizixs.com/2017/09/25/vxlan-protocol-introduction)
 
 
 #### 数据结构算法
