@@ -119,6 +119,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Go 函数式选项模式](https://lingchao.xin/post/functional-options-pattern-in-go.html)
 
+* [Go语言圣经](http://www.admpub.com:8080/gopl-zh/)
 
 
 #### 其他
