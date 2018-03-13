@@ -92,6 +92,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [缓存更新的套路](https://coolshell.cn/articles/17416.html)
 
+* [使用 redis 缓存的经验](https://hacpai.com/article/1520822628400)
+
 * [gRPC服务发现&负载均衡](https://segmentfault.com/a/1190000008672912?utm_source=Weibo&utm_medium=shareLink&utm_campaign=socialShare)
 
 #### Golang
