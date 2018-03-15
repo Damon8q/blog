@@ -7,6 +7,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [高性能网络编程-TCP系列](http://blog.csdn.net/column/details/high-perf-network.html)
 
+* [性能案例-Linux下解决time_wait连接过多（Linux内核优化）](https://zhuanlan.zhihu.com/p/29334504)
+
 * [tcp/ip关闭分两种情况 主动(同步)和被动(顺序)](http://blog.csdn.net/wych1981/article/details/23421273)
 
 * [又见KeepAlive](http://blog.sina.com.cn/s/blog_e59371cc0102ux5w.html)
