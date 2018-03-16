@@ -61,6 +61,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 #### 数据库
 
+* [MySQL数据库规范](https://github.com/alibaba/p3c/tree/master/p3c-gitbook/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93)
+
 * [十步完全理解 SQL](http://blog.jobbole.com/55086/)
 
 * [MySQL参数说明](http://ourmysql.com/archives/411?f=wb)
