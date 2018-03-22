@@ -129,6 +129,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Go Context的踩坑经历](https://zhuanlan.zhihu.com/p/34417106)
 
+* [How To Use Go Interfaces](https://blog.chewxy.com/2018/03/18/golang-interfaces/)
+
 
 #### 其他
 * [mac－改造你的terminal](https://www.jianshu.com/p/bb1c97269b11)
