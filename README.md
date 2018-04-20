@@ -16,6 +16,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [Raft：Understandable Distributed Consensus 可视化的分布式一致性RAFT算法](http://thesecretlivesofdata.com/raft/)
 
 * [TCP 的那些事儿](http://get.ftqq.com/295.get)
+
+* [SSL/TLS 握手过程详解](https://www.jianshu.com/p/7158568e4867)
  
 * [HTTPS工作原理和TCP握手机制](http://www.cnblogs.com/ttltry-air/archive/2012/08/20/2647898.html)
  
