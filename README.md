@@ -52,6 +52,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [【干货】美团推荐算法实践](http://mp.weixin.qq.com/s?__biz=MjM5ODIzNDQ3Mw==&mid=202944919&idx=1&sn=98d617e318420b0bcf451d4c3def31ce)
 
+* [6天通吃树结构—— 第二天 平衡二叉树](http://www.cnblogs.com/huangxincheng/archive/2012/07/22/2603956.html)
+
 
 #### 正则表达式
 
