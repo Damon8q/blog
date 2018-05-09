@@ -17,6 +17,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [TCP 的那些事儿](http://get.ftqq.com/295.get)
 
+* [数字签名是什么？](http://www.ruanyifeng.com/blog/2011/08/what_is_a_digital_signature.html)
+
 * [SSL/TLS 握手过程详解](https://www.jianshu.com/p/7158568e4867)
  
 * [HTTPS工作原理和TCP握手机制](http://www.cnblogs.com/ttltry-air/archive/2012/08/20/2647898.html)
