@@ -91,6 +91,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Redis探索之路](http://mp.weixin.qq.com/s/hfbTRWaGSZfed4I2Op0O-w)
 
+* [MySQL binlog 增量数据解析服务](https://www.jianshu.com/p/be3f62d4dce0)
+
 
 #### 架构(编码)设计
 
