@@ -93,6 +93,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [MySQL binlog 增量数据解析服务](https://www.jianshu.com/p/be3f62d4dce0)
 
+* [MySQL丢数据及主从数据不一致的场景](https://blog.csdn.net/wukong_666/article/details/54729625)
+
 
 #### 架构(编码)设计
 
