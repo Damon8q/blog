@@ -91,6 +91,10 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Redis探索之路](http://mp.weixin.qq.com/s/hfbTRWaGSZfed4I2Op0O-w)
 
+* [腾讯云 CDB : 深入解析 MySQL binlog](https://cloud.tencent.com/developer/article/1032755)
+
+* [MySQL Binlog解析](https://blog.csdn.net/u013256816/article/details/53020335)
+
 * [MySQL binlog 增量数据解析服务](https://www.jianshu.com/p/be3f62d4dce0)
 
 * [MySQL丢数据及主从数据不一致的场景](https://blog.csdn.net/wukong_666/article/details/54729625)
