@@ -95,6 +95,9 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [MySQL丢数据及主从数据不一致的场景](https://blog.csdn.net/wukong_666/article/details/54729625)
 
+* [MySQL GTID复制实现详解](http://www.ywnds.com/?p=3898)
+
+
 
 #### 架构(编码)设计
 
