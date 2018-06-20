@@ -101,6 +101,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [MySQL GTID复制实现详解](http://www.ywnds.com/?p=3898)
 
+* [数据库从0到0.1 (一)： LSM-Tree VS B-Tree](https://blog.bcmeng.com/post/lsm-tree-vs-b-tree.html)
+
 
 
 #### 架构(编码)设计
