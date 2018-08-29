@@ -165,6 +165,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 #### 其他
 * [mac－改造你的terminal](https://www.jianshu.com/p/bb1c97269b11)
+* [Git实用技巧和命令](https://www.toutiao.com/i6591651720835629576/)
 
 
 
