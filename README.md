@@ -24,6 +24,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [SSL/TLS 握手过程详解](https://www.jianshu.com/p/7158568e4867)
  
 * [HTTPS工作原理和TCP握手机制](http://www.cnblogs.com/ttltry-air/archive/2012/08/20/2647898.html)
+
+* [TLS完全指南](https://github.com/k8sp/tls)
  
 * [让你完全理解base64是怎么回事](https://segmentfault.com/a/1190000004533485)
 
