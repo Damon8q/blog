@@ -166,6 +166,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [线性一致性模型与 Go 的 sync 包](https://mp.weixin.qq.com/s/I0u_4LcOswX_3RBfyHjwJw)
 
+* [Go的单元测试技巧](https://mp.weixin.qq.com/s/HUYfl2kJ4J80-fnU_tpa0A)
 
 #### 其他
 * [mac－改造你的terminal](https://www.jianshu.com/p/bb1c97269b11)
