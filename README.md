@@ -168,6 +168,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Go的单元测试技巧](https://mp.weixin.qq.com/s/HUYfl2kJ4J80-fnU_tpa0A)
 
+* [Golang的反射reflect深入理解和示例](https://mp.weixin.qq.com/s/dmtLWZpwBNaDlGjMCC0HxQ)
+
 #### 其他
 * [mac－改造你的terminal](https://www.jianshu.com/p/bb1c97269b11)
 * [Git实用技巧和命令](https://www.toutiao.com/i6591651720835629576/)
