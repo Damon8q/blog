@@ -109,6 +109,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [[玩转MySQL之二]MySQL连接机制浅析及运维](https://zhuanlan.zhihu.com/p/43941022)
 
+* [字段类型与合理的选择字段类型](https://www.kancloud.cn/thinkphp/mysql-design-optimalize/39325)
 
 
 #### 架构(编码)设计
