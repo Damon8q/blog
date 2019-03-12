@@ -128,6 +128,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [使用 redis 缓存的经验](https://hacpai.com/article/1520822628400)
 
 * [gRPC服务发现&负载均衡](https://segmentfault.com/a/1190000008672912?utm_source=Weibo&utm_medium=shareLink&utm_campaign=socialShare)
+* [leveldb代码阅读笔记](https://www.codedump.info/post/20190215-leveldb/)
 
 #### Golang
 * [Go 谚语](https://lingchao.xin/post/go-proverbs.html)
@@ -167,8 +168,6 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [Go并发调度器解析之实现一个协程池](https://zhuanlan.zhihu.com/p/37754274)
 
 * [线性一致性模型与 Go 的 sync 包](https://mp.weixin.qq.com/s/I0u_4LcOswX_3RBfyHjwJw)
-
-* [Go的单元测试技巧](https://mp.weixin.qq.com/s/HUYfl2kJ4J80-fnU_tpa0A)
 
 * [Golang的反射reflect深入理解和示例](https://mp.weixin.qq.com/s/dmtLWZpwBNaDlGjMCC0HxQ)
 
