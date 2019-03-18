@@ -171,6 +171,10 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Golang的反射reflect深入理解和示例](https://mp.weixin.qq.com/s/dmtLWZpwBNaDlGjMCC0HxQ)
 
+* [goyacc用法](https://blog.csdn.net/qq_20996105/article/details/81365272)
+
+* [How to Write a Parser in Go](https://about.sourcegraph.com/go/gophercon-2018-how-to-write-a-parser-in-go)
+
 #### 其他
 * [mac－改造你的terminal](https://www.jianshu.com/p/bb1c97269b11)
 * [Git实用技巧和命令](https://www.toutiao.com/i6591651720835629576/)
