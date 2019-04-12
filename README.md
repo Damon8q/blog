@@ -62,6 +62,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [6天通吃树结构—— 第二天 平衡二叉树](http://www.cnblogs.com/huangxincheng/archive/2012/07/22/2603956.html)
 
+* [Spark入门](http://dblab.xmu.edu.cn/blog/spark/)
+
 
 #### 正则表达式
 
