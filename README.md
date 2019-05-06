@@ -179,6 +179,11 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [How to Write a Parser in Go](https://about.sourcegraph.com/go/gophercon-2018-how-to-write-a-parser-in-go)
 
+
+#### 加密
+* [漫画解读：什么是AES算法](https://zhuanlan.zhihu.com/p/45155135)
+
+
 #### 其他
 * [mac－改造你的terminal](https://www.jianshu.com/p/bb1c97269b11)
 * [Git实用技巧和命令](https://www.toutiao.com/i6591651720835629576/)
