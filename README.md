@@ -175,6 +175,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Golang的反射reflect深入理解和示例](https://mp.weixin.qq.com/s/dmtLWZpwBNaDlGjMCC0HxQ)
 
+* [深度解密Go语言之反射](https://mp.weixin.qq.com/s/Hke0mSCEa4ga_GS_LUp78A)
+
 * [goyacc用法](https://blog.csdn.net/qq_20996105/article/details/81365272)
 
 * [How to Write a Parser in Go](https://about.sourcegraph.com/go/gophercon-2018-how-to-write-a-parser-in-go)
