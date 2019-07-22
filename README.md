@@ -115,7 +115,9 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [The Definitive Guide To InfluxDB In 2019 — devconnected](https://medium.com/schkn/the-definitive-guide-to-influxdb-in-2019-devconnected-23f5661002c8)
 
+* [Readings in Database Systems, 5th Edition](http://www.redbook.io/)
 
+* [数据库开发必读论文列表](https://github.com/rxin/db-readings)
 
 #### 架构(编码)设计
 
