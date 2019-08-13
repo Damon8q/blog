@@ -55,6 +55,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [vxlan 协议原理简介](http://cizixs.com/2017/09/25/vxlan-protocol-introduction)
 
+* [Kubernetes 网络疑难杂症排查分享](http://mp.weixin.qq.com/s?__biz=MzU5Mzc0NDUyNg==&mid=2247483793&idx=1&sn=c7b4ec96d186dd74689482077522337f&chksm=fe0a8670c97d0f66f6a9b6333bbae6529515f9da84b7658234f68609fe200c569866b0099737&mpshare=1&scene=23&srcid=&sharer_sharetime=1565616553139&sharer_shareid=be41aa6391ce50c8727fdd8b5aec8793#rd)
+
 
 #### 数据结构算法
 
