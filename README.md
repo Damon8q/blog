@@ -59,6 +59,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Observations on Errors, Corrections, & Trust of Dependent Systems](https://perspectives.mvdirona.com/2012/02/observations-on-errors-corrections-trust-of-dependent-systems/)
 
+* [Linux删除文件过程解析](https://cloud.tencent.com/developer/article/1143433)
+
 
 #### 数据结构算法
 
