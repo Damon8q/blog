@@ -87,11 +87,9 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [MySQL参数说明](http://ourmysql.com/archives/411?f=wb)
 
-* [微博的MySQL数据库优化实践经验](http://dockone.io/article/1106)
+* [mysql server-id作用和binlog文件](https://blog.csdn.net/jh993627471/article/details/79177896)
 
 * [Mysql建表与索引使用规范整理](http://blog.csdn.net/jenminzhang/article/details/9702345)
-
-* [MYSQL性能优化的最佳20+条经验](http://coolshell.cn/articles/1846.html)
 
 * [我必须得告诉大家的MySQL优化原理](http://www.jianshu.com/p/d7665192aaaf)
 
