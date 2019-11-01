@@ -142,6 +142,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [gRPC服务发现&负载均衡](https://segmentfault.com/a/1190000008672912?utm_source=Weibo&utm_medium=shareLink&utm_campaign=socialShare)
 * [leveldb代码阅读笔记](https://www.codedump.info/post/20190215-leveldb/)
 
+* [Kafka源码阅读系列](http://matt33.com/archives/)
+
 #### Golang
 * [Go 谚语](https://lingchao.xin/post/go-proverbs.html)
 
