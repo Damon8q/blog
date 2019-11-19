@@ -191,6 +191,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [How to Write a Parser in Go](https://about.sourcegraph.com/go/gophercon-2018-how-to-write-a-parser-in-go)
 
+* [Let's build a SQL parser in Go!](https://marianogappa.github.io/software/2019/06/05/lets-build-a-sql-parser-in-go/)
+
 * [Golang 是否有必要内存对齐？](https://ms2008.github.io/2019/08/01/golang-memory-alignment/)
 
 * [Go test 少为人知的特性](https://studygolang.com/articles/12587)
