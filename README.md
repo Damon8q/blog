@@ -145,6 +145,10 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [Kafka源码阅读系列](http://matt33.com/archives/)
 
 #### Golang
+* [代码规范：Uber go style](https://github.com/uber-go/guide)
+
+* [代码规范：go-advice](https://github.com/cristaloleg/go-advice)
+
 * [Go 谚语](https://lingchao.xin/post/go-proverbs.html)
 
 * [golang 中fmt用法](http://blog.csdn.net/chenbaoke/article/details/39932845)
