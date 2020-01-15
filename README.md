@@ -83,13 +83,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [MySQL数据库规范](https://github.com/alibaba/p3c/tree/master/p3c-gitbook/MySQL%E6%95%B0%E6%8D%AE%E5%BA%93)
 
-* [十步完全理解 SQL](http://blog.jobbole.com/55086/)
-
 * [MySQL参数说明](http://ourmysql.com/archives/411?f=wb)
-
-* [mysql server-id作用和binlog文件](https://blog.csdn.net/jh993627471/article/details/79177896)
-
-* [Mysql建表与索引使用规范整理](http://blog.csdn.net/jenminzhang/article/details/9702345)
 
 * [我必须得告诉大家的MySQL优化原理](http://www.jianshu.com/p/d7665192aaaf)
 
@@ -100,12 +94,6 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [Join的实现原理及优化思路](http://www.cnblogs.com/ggjucheng/archive/2012/11/15/2772148.html)
 
 * [Redis探索之路](http://mp.weixin.qq.com/s/hfbTRWaGSZfed4I2Op0O-w)
-
-* [腾讯云 CDB : 深入解析 MySQL binlog](https://cloud.tencent.com/developer/article/1032755)
-
-* [MySQL Binlog解析](https://blog.csdn.net/u013256816/article/details/53020335)
-
-* [MySQL binlog 增量数据解析服务](https://www.jianshu.com/p/be3f62d4dce0)
 
 * [MySQL丢数据及主从数据不一致的场景](https://blog.csdn.net/wukong_666/article/details/54729625)
 
@@ -122,6 +110,10 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 * [Readings in Database Systems, 5th Edition](http://www.redbook.io/)
 
 * [数据库开发必读论文列表](https://github.com/rxin/db-readings)
+
+* [时序数据库技术体系 – InfluxDB TSM存储引擎之TSMFile](http://hbasefly.com/2018/01/13/timeseries-database-4/)
+
+* [阿里时间序列数据库专栏](https://zhuanlan.zhihu.com/c_1081187679500120064)
 
 #### 架构(编码)设计
 
