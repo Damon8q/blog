@@ -201,6 +201,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 #### 优秀博客
 * [面向信仰编程-包含各种为什么](https://draveness.me/)
+* [硬盘在歌唱-Pingcap的一位大佬](http://disksing.com/post/)
 
 
 #### 其他
