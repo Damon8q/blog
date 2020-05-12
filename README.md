@@ -197,7 +197,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 
 #### 加密
-* [漫画解读：什么是AES算法](https://zhuanlan.zhihu.com/p/45155135)
+* [漫画解读：什么是AES算法](https://juejin.im/entry/59eea418f265da4320026b1f)
 * [聊聊AES](https://blog.huoding.com/2019/05/06/739)
 
 
