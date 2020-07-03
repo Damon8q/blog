@@ -115,6 +115,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [阿里时间序列数据库专栏](https://zhuanlan.zhihu.com/c_1081187679500120064)
 
+* [空间索引之Uber H3](https://www.biaodianfu.com/uber-h3.html)
+
 #### 架构(编码)设计
 
 * [微服务架构下的数据一致性：可靠事件模式](http://www.howardliu.cn/micro-services/data-consistency-in-micro-services-reliable-event/)
