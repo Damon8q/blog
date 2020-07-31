@@ -115,6 +115,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [阿里时间序列数据库专栏](https://zhuanlan.zhihu.com/c_1081187679500120064)
 
+* [空间索引之Uber H3](https://www.biaodianfu.com/uber-h3.html)
+
 #### 架构(编码)设计
 
 * [微服务架构下的数据一致性：可靠事件模式](http://www.howardliu.cn/micro-services/data-consistency-in-micro-services-reliable-event/)
@@ -197,7 +199,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 
 #### 加密
-* [漫画解读：什么是AES算法](https://zhuanlan.zhihu.com/p/45155135)
+* [漫画解读：什么是AES算法](https://juejin.im/entry/59eea418f265da4320026b1f)
 * [聊聊AES](https://blog.huoding.com/2019/05/06/739)
 
 
