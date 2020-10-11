@@ -19,7 +19,14 @@ Delta Tree的架构充分参考了B+ Tree和LSM Tree的设计思想。
 和B+ Tree的叶子节点一样，Segment也支持Split、Merge，初始状态一张表的只存在一个range为[-∞,+∞]的Segment。
 
 
+## 一个Segment内部的架构是怎么样的?
+![image](segment.png)
+
+在Segment内部Delta Tree是类似LSM的分层数据组织方式，因为一个Segment的数据量相对于传统的LSM小很多，所以Delta Tree只需要固定的两层，
+即Delta Layer和Stable Layer，分别对应LSM Tree的L0和L1。 层数越少，写放大也就越小。 
+
 ## 一个Segment的大小是多少?
 Segment的切分粒度通常在150万行左右， 单机Segment总数通常在10万以内，
+
 一个Segment是否和TiKV里面的Region一一对应？ 如果不是那一个Segment的数据量大小大概是多少？完全只是按照行数进行划分Segment吗？
 
