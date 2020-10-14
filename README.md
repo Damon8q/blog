@@ -61,6 +61,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Linux删除文件过程解析](https://cloud.tencent.com/developer/article/1143433)
 
+* [从一次 Connection Reset 说起，TCP 半连接队列与全连接队列](https://cjting.me/2019/08/28/tcp-queue/)
+
 
 #### 数据结构算法
 
