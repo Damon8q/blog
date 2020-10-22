@@ -103,7 +103,9 @@ TODO：是为了写入优化吗？每次写入Delta Layer只需要尾部追加�
 ## 减小读放大是怎么体现的?
 1. 只有Delta Layer和Stable Layer两层结构，相对于LSM的多层结构，可以明显减小读放大。
 2. 读Delta Index。
+
     对Delta Layer建立B+ Tree索引，保存排序信息，方便查询和做Merge。
+    
     TODO：Delta Index只是对Delta Layer建立索引吗，还是一起的？Tuple Id是什么？
 
 ## 减小写放大是怎么体现的?
@@ -111,3 +113,9 @@ TODO：是为了写入优化吗？每次写入Delta Layer只需要尾部追加�
 
 1. 批量写入不需要写入Delta Cache，直接写入磁盘。
 2. TiFlash设计理念是尽可能的保持写入能力。 在极端写入场景，会减小Delta Layer的Merge频率，牺牲部分读的性能。
+
+## 从TiFlash学到了什么?
+1. Delta Tree的思想（按范围划分，分而治之，减小复杂度）
+2. 大批量导入时，可以不经过cache
+3. 分层思想（这里体现为，从Delta Cache刷盘如果直接写入Stable Layer，则一次代价过大，那么中间再加一个Delta层，后续在批量做一次Merge到Stable Layer）
+4. 存储中间状态，加速后续的查询（体现为对Delta Layer，查询后保存内存B+ Tree，记录数据的顺序信息）
