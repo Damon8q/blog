@@ -149,10 +149,9 @@ ps：文件命名规则为：generation(compaction次数)-sequence(近似level�
 由于Index中各个key长度不定，因此使用offsets字段辅助进行二分搜索，offsets数组中储存的是对应Index中key数据偏移量。
 
 
-TODO：一个tsm文件怎么和tombstones时间关联起来的？
-
 ## tsm文件是如何做compaction的？
 compaction整体逻辑比较复杂，暂时没有完全明白，这里只描述主干部分逻辑：
+
 tsm也是LSM结构，逻辑上是分４个level来存储tsm文件。后台会启动一个level compaction线程，定期检查是否需要做compaction操作。　
 根据generation+sequence找出每一个level的所有tsm文件(会按指定大小分组，每个组内的文件就是一次compaction的文件)，
 调用scheduler.next()方法，决定应该对哪一层做compaction，对于这一层内，一次compaction也只是对这一层的一个组进行。
