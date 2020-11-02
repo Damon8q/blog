@@ -133,7 +133,8 @@ ps：文件命名规则为：generation(compaction次数)-sequence(近似level�
 但是如果block数量超过65535，或者生成的文件超过２G，会生成新的文件，sequence会再加１)
 
 ### 后台compaction生成tsm步骤
-
+1. 后台compaction选出需要被执行compaction的文件列表，对文件执行多路归并
+2. 之后和上面第５步类似，写入新的tsm中
 
 
 ## tsm文件是如何读取的(一个shard内部)？
@@ -148,6 +149,11 @@ ps：文件命名规则为：generation(compaction次数)-sequence(近似level�
 ![image](index_binary_search.png)
 由于Index中各个key长度不定，因此使用offsets字段辅助进行二分搜索，offsets数组中储存的是对应Index中key数据偏移量。
 
+## 一个tsm文件怎么和tombstones时间关联起来的？
+通过名字关联，如果删除了数据，每个.tsm文件都会关联一个同名的.tombstone文件。
+
+删除数据的时候，会遍历所有.tsm文件，查看需要删除的key是否包含在此tsm文件中，如果包含，则创建对应的tombstone文件，
+同时会删除内存中索引部分此key的内容(如果是整个key删除的话)，否则则是在内存中的索引部分的tombstones字段添加一个key和时间范围的对应信息。
 
 ## tsm文件是如何做compaction的？
 compaction整体逻辑比较复杂，暂时没有完全明白，这里只描述主干部分逻辑：
