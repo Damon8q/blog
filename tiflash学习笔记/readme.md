@@ -82,6 +82,9 @@ PS 可能会存在一个或者多个 Writable PageFile，当 Writable PageFile �
 对 Page 的所有更新操作是直接写到 PageFile 的末尾，比如 Page 的 Update 操作，是通过在 Writable PageFile 写一个新的 Page，
 然后在内存的元数据表中，将 PageId 指向新的 Page。
 
+### PageStorage的Get、Insert、Delete、Update接口，参数是怎么样的？
+TODO：主要想知道基于对象存储，怎么进行查询呢？ 是需要把整个文件读取出来查询吗？
+
 ### PageMap是怎么使用的?
 TODO：和数据查询的关系是什么
 
