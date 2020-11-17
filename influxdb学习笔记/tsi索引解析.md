@@ -46,5 +46,131 @@ select * from m where tag1 = 'xxx';
 
 
 ## tsi文件格式是怎么样的？
+tsi文件格式主要由3部分组成：1个series block，1到多个tag block，和一个measurement block。 
+还有一个文件尾部的trailer block，用于记录这些block的offset。
 
+```
+series block
+tag block
+...
+...
+tag block
+measurement block
+file trailer 
+```
+
+### Series Block Layout
+
+```
+	┏━━━━━━━SeriesBlock━━━━━━━━┓
+	┃ ┌──────────────────────┐ ┃
+	┃ │      Series Key      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │      Series Key      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │      Series Key      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │                      │ ┃
+	┃ │      Hash Index      │ ┃
+	┃ │                      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │      Series Key      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │      Series Key      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │      Series Key      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │                      │ ┃
+	┃ │      Hash Index      │ ┃
+	┃ │                      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │    Index Entries     │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │     HLL Sketches     │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │       Trailer        │ ┃
+	┃ └──────────────────────┘ ┃
+	┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+```
+
+Series block存储了原始的排好序的series key，同时也提供了Hash Index，用于series 快速查找。
+Hash Index是周期性的插入的，所有的series和Hash Index都写入后，紧跟着就连续写所有的index entries，用于二分查找Hash Index。
+
+Series block尾部，包含了HyperLogLog++ sketches，用于预估创建和删除的series 的数量。 最后Trailer包含了此block的一些元信息。
+
+
+### Tag Block Layout
+```
+    ┏━━━━━━━━Tag Block━━━━━━━━━┓
+	┃ ┌──────────────────────┐ ┃
+	┃ │        Value         │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │        Value         │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │        Value         │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │                      │ ┃
+	┃ │      Hash Index      │ ┃
+	┃ │                      │ ┃
+	┃ └──────────────────────┘ ┃
+	┃ ┌──────────────────────┐ ┃
+	┃ │        Value         │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │        Value         │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │                      │ ┃
+	┃ │      Hash Index      │ ┃
+	┃ │                      │ ┃
+	┃ └──────────────────────┘ ┃
+	┃ ┌──────────────────────┐ ┃
+	┃ │         Key          │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │         Key          │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │                      │ ┃
+	┃ │      Hash Index      │ ┃
+	┃ │                      │ ┃
+	┃ └──────────────────────┘ ┃
+	┃ ┌──────────────────────┐ ┃
+	┃ │       Trailer        │ ┃
+	┃ └──────────────────────┘ ┃
+	┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
+紧接着series block的是一个或多个tag block，每个一measurement对应一个tag block。
+此block由一个排好序的tag values list组成以及一个排好序的tag keys list组成。 
+它们都有各自的Hash Index，用于快速的查询。
+
+每个values entry包含了series keys的一组排好序的offsets。 
+
+
+### Measurement block
+```
+    ┏━━━━Measurement Block━━━━━┓
+	┃ ┌──────────────────────┐ ┃
+	┃ │     Measurement      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │     Measurement      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │     Measurement      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │                      │ ┃
+	┃ │      Hash Index      │ ┃
+	┃ │                      │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │     HLL Sketches     │ ┃
+	┃ ├──────────────────────┤ ┃
+	┃ │       Trailer        │ ┃
+	┃ └──────────────────────┘ ┃
+	┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
+
+measurment block包含了一组排好序的measurments，它们关联到series offset以及tag block。 
+这可以让查询一个measurement下的所有series key更快。 
+
+
+## 缺点及改进方向
+1. 所有表的索引都放在一起的。
+2. 查询语句需要先获取到series id，再去series file中获取series key。 显得多余。 
+3. 分表及文件按series id组织。
 
