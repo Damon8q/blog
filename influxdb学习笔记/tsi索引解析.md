@@ -11,6 +11,16 @@ tsi索引是Influxdb内部为了实现基于tag的多维查询，而设计的倒
 
 每个series内部会生成一个对应的series ID，倒排索引就是对每个measurement，tag建立和series ID的对应关系。
 
+## tsi索引的写入流程？
+![image](tsi索引写入流程图像.png)
 
+
+
+## tsi索引是如何应用到查询里面的？
+
+
+
+
+## tsi文件格式是怎么样的？
 
 
