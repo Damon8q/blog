@@ -13,6 +13,19 @@
 7. TableCache：TableCache 用于缓存 SSTable 的文件描述符、索引和 filter。
 8. BlockCache：SSTable 的数据是被组织成一个个 block。 BlockCache 用于缓存这些 block（解压后）的数据。
 
+## MemTable SkipList是如何实现的？
+MemTable是通过SkipList数据结构存储数据的。 SkipList理论的插入和查询的时间复杂度都为Log(N)。
+![image](skiplist.png)
+
+Skip list 是一种可以用于替代查找树的内存数据结构，其基本原理是在一个有序的链表之上增加一些索引，通过一个随机规则（保证一定概率）来“模拟”二分查找。
+
+查询时可以通过选择最佳路径，快速找到查询的数据。 如需要查询(9)，则通过的线路为：经过的站点有 (1)、(4)、(6)、(9)。
+
+LevelDB的SkipList支持无锁的一写多读，并且只支持查找和插入。LevelDB 通过维护一个写队列来保证同一时刻只有一个线程会写 MemTable。 
+
+### SkipList如何实现无锁一写多读的？
+
+
 ## MemTable 的内部编码是怎么样的?
 ![image](memtable.png)
 
@@ -64,15 +77,56 @@ enum RecordType {
 当日志文件发生数据损坏的时候，这种定长块的模式可以很简单地跳过有问题的块，而不会导致局部的错误影响到整个文件。
 
 
+## SSTable内部结构？
+SSTable 全称 Sorted String Table，顾名思义，里面的 key-value 都是有序保存的。除了两个 MemTable，LevelDB 中的大部分数据是以 SSTable 的形式保存在外存上。
+
+SSTable 由 compaction 生成：
+* Minor Compaction：一个 MemTable 直接 dump 成 level-0 的一个 SSTable。
+* Major Compaction：多个 SSTable 进行合并、重整，生成 1～多个 SSTable。
+
+![image](sstable_format.png)
+
+### Footer
+Footer 的大小为 48 字节，内容是一个 8 字节的 magic number 和两个 BlockHandle —— index handle 和 meta index handle，
+index handle 指向 index block，meta index handle 指向 meta index block。
+
+### Index Block
+Index block 中的每条 key-value 指向一个 data block。value 比较简单直接，就是对应的 data block。
+key 是一个大于等于当前 data block 中最大的 key 且小于下一个 block 中最小的 key，
+这样做是为了减小 index block 的体积，这样index block 可以被尽可能 cache 在内存中。
+
+### Meta Index Block
+Meta index block 中的每条 key-value 指向一个 meta block。目前 LevelDB 中只有一个 meta block，保存的是这个 SSTable 中的 key 组成的 bloom filter。
+
+### Data Block
+Data block 是实际的 key-value 数据。  最简单的方式，block 里面只需要将一个个 key-value 有序保存。
+但是为了节省空间，LevelDB 在 block 的内部实现了前缀压缩。
+
+前缀压缩利用了 key 的有序性（前缀相同的有序 key 会聚集在一起）对 key 进行压缩，每个 key 与前一个 key 相同的前缀部分可以不用保存。
+读取的时候再根据规则进行解码即可。
+
+LevelDB 将 data block 的一个 key-value 称为一条 entry。每条 entry 的格式如下：
+![image](data_block.png)
+
+* shared_bytes：和前一个 key 相同的前缀长度。
+* unshared_bytes：和前一个 key不同的后缀部分的长度。
+* value_length：value 数据的长度。
+* key_delta：和前一个 key不同的后缀部分。
+* value：value 数据。
+
+一个 data block 的数据格式如下：
+![image](data_block2.png)
+
+* restarts：在 LevelDB 中，默认每 16 个 key 就会重新计算前缀压缩，重新开始计算前缀压缩到第一个 key 称之为重启点（restart point）。
+    restarts 数组记录了这个 block 中所有重启点的 offset。
+* num_restarts：是 restarts 数组的长度。
+
+在 block 中查找一个 key:
+1. 先在 restarts 数组的基础上进行二分查找，确定 restart point。
+2. 从 restart point 开始遍历查找。
 
 
-
-
-
-
-
-
-
+## LSM层级越多，写放大越大，那为什么还要设计那么多层级呢？
 
 
 
