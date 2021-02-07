@@ -97,7 +97,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [关于分布式事务、两阶段提交协议、三阶提交协议](http://www.hollischuang.com/archives/681)
 
-* [[玩转MySQL之二]MySQL连接机制浅析及运维](https://zhuanlan.zhihu.com/p/43941022)
+* [ClickHouse和他的朋友们](https://bohutang.me/)
 
 * [The Definitive Guide To InfluxDB In 2019 — devconnected](https://medium.com/schkn/the-definitive-guide-to-influxdb-in-2019-devconnected-23f5661002c8)
 
