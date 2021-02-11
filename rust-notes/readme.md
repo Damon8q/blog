@@ -469,10 +469,24 @@ fn main() {
 * 当s1,s2离开作用域时，它们都会尝试释放相同的内存：
   - 造成二次释放（double free）bug
 
+* 为了保证内存安全：
+  - Rust没有尝试复制被分配的内存
+  - Rust让s1失效
+    * 当s1离开作用域的时候，Rust不需要释放任何东西
+* 当s2创建以后 再使用s1的效果：
+```rust
+let mut s = String::from("Hello");
+  |         ----- move occurs because `s` has type `String`, which does not implement the `Copy` trait
+3 |     let s2 = s;
+  |              - value moved here
+4 | 
+5 |     println!("{}", s);
+  |                    ^ value borrowed here after move
+```
 
-
-
-
+* 浅拷贝（shallow copy）
+* 深拷贝（deep copy）
+* 你也许会将复制指针、长度、容量视为浅拷贝，但由于Rust让s1失效了，所以我们用一个新的术语：移动（move）
 
 
 
