@@ -539,5 +539,293 @@ x赋值给y后，依然是有效的，因为x是整数类型(简单类型)，在
     * (i32, i32) 是
     * (i32, String) 不是
 
+### 所有权与函数
+* 在语义上，将值传递给函数和把值赋给变量是类似的：
+  - 将值传递给函数将发生“移动”或“复制”
+```rust
+fn main() {
+    let s = String::from("Hello World");
+    // s传入函数，即s移动到此函数里面，s即不再有效
+    take_ownership(s);
+
+    let x = 5;
+    // x也传入函数，x是i32类型，此类型实现了Copy trait，实际上往函数里面传的是x的副本，因此x在传递后仍然是有效的
+    makes_copy(x);
+
+    println!("x: {}", x); // 此行以后，x就不再有效
+}
+
+fn take_ownership(s: String) {
+    println!("{}", s);  // 此行之后，s离开了作用域，此时rust会自动调用其Drop函数，其所占的内存也就被释放了
+}
+
+fn makes_copy(n: i32) {
+    println!("{}", n);  // 此行之后，n离开了作用域，而对于简单类型，不会有什么特别的事情发生
+}
+
+```
+
+#### 返回值与作用域
+* 函数在返回值的过程中同样也会发生所有权的转移
+```rust
+fn main() {
+    let s1 = gives_ownership(); // 返回值移动给s1
+
+    let s2 = String::from("hello"); // 声明s2变量
+
+    let s3 = takes_and_gives_back(s2); // 将s2移动到函数里面，并且s3再次获得返回值所有权
+
+    // 此行之后， s1, s3离开了作用域，其会被销毁
+}
+
+fn gives_ownership() -> String {
+    let s = String::from("hello"); // 声明一个String变量
+    s   // 作为返回值移动到调用它的函数里面
+}
+
+fn takes_and_gives_back(s: String) -> String {
+    s // 即将参数s作为返回值又移动给了调用者。 
+}
+```
+
+* 一个变量的所有权总是遵循同样的模式：
+  - 把一个值赋给其他变量时就会发生移动
+  - 当一个包含heap数据的变量离开作用域时，它的值就会被drop函数清理，除非数据的所有权移动到另外一个变量上了
+
+#### 如何让函数使用某个值，但不获得其所有权？
+* Rust有一个特性叫做“引用(Reference)”
+
+### 引用与借用
+```rust
+fn main() {
+    let s = String::from("Hello");
+    let len = calculate_len(&s);  // &符号，代表传递的是s的引用
+
+    println!("The length of '{}' is {} ", s, len);
+}
+
+fn calculate_len(s: &String) -> usize { // 参数带有&符号，表示是参数是String类型的引用
+    s.len()  // s只是一个引用，并不拥有其所指向的值的所有权，因此其离开作用域后，不会销毁其所指向的值
+}
+```
+
+* 参数的类型是&String而不是String
+* &符号就表示引用：允许引用某些值而不取得其所有权
+![image](reference.png)
+
+上图中，s代表s1的指针，s指向了s1, s1内部又包含一个指针，它指向了存在heap上的真实数据内容。
+
+#### 借用
+* 我们把引用作为函数参数这个行为叫做借用
+* 是否可以修改借用的东西？
+  - 不行
+```rust
+fn main() {
+    let s = String::from("Hello");
+    let len = calculate_len(&s);
+
+    println!("The length of '{}' is {} ", s, len);
+}
+
+fn calculate_len(s: &String) -> usize {
+    s.push_str(", world");  // 报错：error[E0596]: cannot borrow `*s` as mutable, as it is behind a `&` reference
+    s.len()
+}
+```
+* 和变量一样，引用默认也是不可变的
+
+#### 可变引用
+```rust
+fn main() {
+    let mut s = String::from("Hello");  // 声明可变变量
+    let len = calculate_len(&mut s); // 引用也需要是可变的
+
+    println!("The length of '{}' is {} ", s, len);
+}
+
+fn calculate_len(s: &mut String) -> usize {
+    s.push_str(", world");
+    s.len()
+}
+```
+* 可变引用有一个重要的限制：在特定作用域内，对某一块数据，只能有一个可变引用
+  - 这样做的好处是可在编译时防止数据竞争
+```rust
+fn main() {
+    let mut s = String::from("Hello");
+    let s1 = &mut s;
+    let s2 = &mut s;  // 报错：error[E0499]: cannot borrow `s` as mutable more than once at a time
+
+    println!("The length of '{}' is {} ", s1, s2);
+}
+```
+
+* 在以下三种行为会发生数据竞争：
+  - 两个或多个指针同时访问同一个数据
+  - 至少有一个指针用于写入数据
+  - 没有使用任何机制来同步对数据的访问
+
+* 可以通过创建新的作用域，来允许非同时的创建多个可变引用
+```rust
+fn main() {
+    let mut s = String::from("Hello");
+    {   
+        let s1 = &mut s;
+    }
+    
+    let s2 = &mut s;
+}
+```
+
+* 另外一个限制：不可以同时拥有一个可变引用和一个不可变引用(因为如果允许的话，可变引用把值修改了，那么不可变引用就失效了)
+* 多个不可变引用是可以的
+```rust
+fn main() {
+    let mut s = String::from("Hello");
+    let r1 = &s;
+    let r2 = &s;
+    let s1 = &mut s;  // 报错：error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable
+    println!("{}, {}, {}", r1, r2, s1);
+}
+```
+
+#### 悬空引用 Dangling References
+* 悬空指针(Dangling Pointer): 一个指针引用了内存中的某个地址，而这块内存可能已经释放并分配给其它人使用了
+* 在Rust里，编译器可保证引用永远都不会是悬空引用：
+  - 如果你引用了某些数据，编译器将保证在引用离开作用域之前数据不会离开作用域
+```rust
+fn main() {
+    let r = dangle();
+}
+
+fn dangle() -> &String { // error[E0106]: missing lifetime specifier
+    let s = String::from("hello");
+    &s  // 此处会出现悬空引用，但是编译时，无法编译通过
+}
+```
+
+#### 引用的规则
+* 在任何给定的时刻，只能满足下列条件之一：
+  - 一个可变的引用
+  - 任意数量的不可变的引用
+* 引用必须一直有效
 
 
+### 切片
+* 除了上一章的引用，Rust的另外一种不持有所有权的数据类型：切片(slice)
+* 一道题，编写一个函数：
+  - 它接收一个字符串作为参数
+  - 返回它在这个字符串中找到的第一个单词
+  - 如果函数没有找到任何空格，那么整个字符串就被返回
+
+尝试解答：
+```rust
+fn main() {
+    let mut s = String::from("Hello world");
+    let word_index = first_word(&s);
+    
+    // s.clear();   
+    println!("{}", word_index);
+}
+
+fn first_word(s: &String) -> usize {
+    let bytes = s.as_bytes();
+
+    for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return i;
+        }
+    }
+    s.len()
+}
+```
+上面这种实现方式的问题在于：需要确保word_index的有效性，保证word_index和变量s之间的同步性(比如如果调用了clear方法，那么word_index就失效了)。
+而这类工作非常繁琐，并且容易出错。 Rust为这类问题提供了解决方案：字符串切片
+
+#### 字符串切片
+* 字符串切片是指向字符串中一部分内容的引用
+```rust
+fn main() {
+    let s = String::from("Hello world");
+    let hello = &s[0..5];  //简写： &s[..5]
+    let world = &s[6..11];  //简写： &s[6..]
+    // let whole = &s[..]  // 整个切片的简写
+}
+```
+* 形式：[开始索引..结束索引]
+  - 开始索引是切片起始位置的索引值
+  - 结束索引是切片终止位置的下一个索引值
+
+* 注意事项
+  - 字符串切片的范围索引必须发生在有效的UTF-8字符边界内
+  - 如果尝试从一个多字节的字符中创建字符串切片，程序会报错并退出
+
+* 使用字符串切片重写例子：
+```rust
+fn main() {
+    let mut s = String::from("Hello world");
+    let word = first_word(&s);
+    // s.clear(); // error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable
+    println!("{}", word);
+}
+
+fn first_word(s: &String) -> &str {
+    let bytes = s.as_bytes();
+
+    for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[..i];
+        }
+    }
+    &s[..]
+}
+
+```
+
+#### 字符串字面值是切片
+* 字符串字面值被直接存储在二进制程序中
+* let s = "Hello world";
+* 变量s的类型是&str, 它是一个指向二进制程序特定位置的切片
+  - &str是不可变引用，所以字符串字面值也是不可变的
+
+#### 将字符串切片作为参数传递
+* fn first_word(s: &String) -> &str {
+* 有经验的Rust开发者会采用&str作为参数类型，因为这样就可以同时接收String和&str类型的参数了
+* fn first_word(s: &str) -> &str {
+  - 使用字符串切片，直接调用该函数
+  - 使用String，可以创建一个完整的String切片来调用该函数
+* 定义函数时，使用字符串切片来代替字符串引用会使我们的API更加通用，且不会损失任何功能
+```rust
+fn main() {
+    let s = String::from("Hello world");
+    let word = first_word(&s[..]);
+    println!("{}", word);
+
+    let s2 = "hello world";
+    let word = first_word(s2);
+
+    println!("{}", word);
+}
+
+fn first_word(s: &str) -> &str {
+    let bytes = s.as_bytes();
+
+    for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[..i];
+        }
+    }
+    &s[..]
+}
+
+```
+
+#### 其他类型的切片
+```rust
+fn main() {
+  let a = [1, 2, 3, 4, 5];
+  let slice = &a[1..3]; // &[i32] 类型
+
+}
+```
+切片的内部包含：一个指针(指向其实元素的位置)和一个切片的长度，两个字段
