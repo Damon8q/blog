@@ -829,3 +829,206 @@ fn main() {
 }
 ```
 切片的内部包含：一个指针(指向其实元素的位置)和一个切片的长度，两个字段
+
+### 定义并实例化struct
+#### 什么是struct
+* struct,结构体
+  - 自定义的数据类型
+  - 为相关联的值命名，打包有意义的组合
+  
+#### 定义struct
+* 使用struct关键字，并为整个struct命名
+* 在花括号内，为所有字段(Field)定义名称和类型
+* 例如：
+```rust
+struct User {
+  username: String,
+  email: String,
+  sign_in_count: u64,
+  active: bool,
+}
+```
+
+#### 实例化struct
+* 想要使用struct，需要创建struct的实例：
+  - 为每个字段指定具体值
+  - 无需按声明的顺序进行指定
+* 例子：
+```rust
+fn main() {
+  println!("Hello world");
+
+  let mut user1 = User {
+    email: String::from("abc@qq.com"),
+    username: String::from("nange"),
+    active: true,
+    sign_in_count: 556,
+  };
+  user1.email = String::from("another@qq.com");
+}
+
+struct User {
+  username: String,
+  email: String,
+  sign_in_count: u64,
+  active: bool,
+}
+```
+
+注意: 一旦struct的实例是可变的，那么实例中所有的字段都是可变的。 不允许部分可变部分不可变。
+
+#### struct作为函数的返回值
+* 例子：
+```rust
+fn main() {
+    let mut user1 = build_user(String::from("123@qq.com"), String::from("nange"));
+    user1.email = String::from("another@qq.com");
+    println!("email: {}", user1.email);
+}
+
+struct User {
+    username: String,
+    email: String,
+    sign_in_count: u64,
+    active: bool,
+}
+
+fn build_user(email: String, username: String) -> User {
+    User {
+        username: username,
+        email: email,
+        active: true,
+        sign_in_count: 1,
+    }
+}
+```
+
+#### 字段初始化简写
+* 当字段名与字段值对应的变量名相同时，就可以使用字段初始化简写方式：
+* 示例：
+```rust
+fn build_user(email: String, username: String) -> User {
+    User {
+        username,
+        email,
+        active: true,
+        sign_in_count: 1,
+    }
+}
+```
+
+#### struct更新语法
+* 当你想基于某个struct实例来创建一个新实例的时候，可以使用struct更新语法：
+* 正常写法：
+```rust
+fn main() {
+  let user2 = User {
+      email: String::from("another@qq.com"),
+      username: String::from("another"),
+      active: user1.active,
+      sign_in_count: user1.sign_in_count,
+  };
+}
+```
+* 更新语法写法：
+```rust
+fn main() {
+  let user2 = User {
+      email: String::from("another@qq.com"),
+      username: String::from("another"),
+      ..user1 // 表示还没有指定的字段的值都使用user1相同的值
+  };
+}
+```
+
+#### Tuple struct
+* 可以定义类似tuple的struct，叫做tuple struct
+  - Tuple struct整体有个名字，但里面的元素没有名字
+  - 适用：想给整个tuple起名，并让它不同于其他tuple，而且又不需要给每个元素起名
+* 定义tuple struct：使用struct关键字，后边是名字，以及里面元素的类型
+* 例子：
+```rust
+fn main() {
+    let black = Color(0, 0, 0);
+    let origin = Point(0, 0, 0);
+    println!("black item0: {}, origin item0: {}", black.0, origin.0);
+}
+
+struct Color(i32, i32, i32);
+struct Point(i32, i32, i32);
+```
+* black和origin是不同的类型，是不同tuple struct的实例
+
+#### Unit-Like Struct（没有任何字段）
+* 可以定义没有任何字段的struct，叫做Unit-Like struct(因为与(),单元类型类似)
+* 适用于需要在某个类型上实现某个trait，但是在里面又没有想要存储的数据
+
+#### struct数据的所有权
+* 示例：
+```rust
+struct User {
+    username: String,
+    email: String,
+    sign_in_count: u64,
+    active: bool,
+}
+```
+* 这里的字段使用了String而不是&str：
+  - 该struct实例拥有所有数据的所有权
+  - 只要struct实例是有效的，那么里面的字段数据也是有效的
+* struct里也可以存放给引用，但这需要使用生命周期(以后讲)
+  - 生命周期保证只要struct实例是有效的，那么里面的引用也是有效的
+  - 如果struct里面存储引用，而不使用生命周期，就会报错(示例)
+```rust
+struct User {
+    username: &str,  // error[E0106]: missing lifetime specifier
+    email: &str,   // error[E0106]: missing lifetime specifier
+    sign_in_count: u64,
+    active: bool,
+}
+
+fn main() {
+    let user1 = User {
+        username: "nange",
+        email: "123@qq.com",
+        sign_in_count: 1,
+        active: true,
+    };
+}
+```
+
+#### struct的例子
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    length: u32,
+}
+
+fn main() {
+    let rect = Rectangle {
+        width: 30,
+        length: 50,
+    };
+    println!("{}", area(&rect));
+
+    // 要能被println!()方法打印，需要实现Display trait，简单类型，默认已经实现Display，但是复杂类型则没有，因此直接打印会报错
+    // println!("{}", rect)
+
+    // 使用:?，表示打印调试(Debug)信息，Rust本身包含了打印调试信息的功能，但是必须为结构体显示的选择这一功能，也就是加上#[derive(Debug)]
+    println!("{:?}", rect);
+    println!("{:#?}", rect); // 打印更易读的调试信息
+}
+
+fn area(rect: &Rectangle) -> u32 {
+    rect.width * rect.length
+}
+```
+
+* std::fmt::Display
+* std::fmt::Debug
+* #[derive(Debug)]
+* {:?}
+* {:#?}
+
+
