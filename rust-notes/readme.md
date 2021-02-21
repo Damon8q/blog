@@ -1031,4 +1031,194 @@ fn area(rect: &Rectangle) -> u32 {
 * {:?}
 * {:#?}
 
+### struct的方法
+* 方法和函数类似：fn关键字、名称、参数、返回值
+* 方法与函数不同之处：
+  - 方法是在struct（或enum、trait对象）的上下文中定义
+  - 第一个参数是self，表示方法被调用的struct实例
 
+#### 定义方法
+* 示例：
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    length: u32,
+}
+
+impl Rectangle {
+    // 此块就是struct的上下文
+
+    // 此处是获取了一个借用，不持有所有权，并且是不可变借用
+    // 也可以获得所有权和可变借用，则可以写为：fn area(self) -> u32; fn area(&mut self) -> u32;(如果是可变的，那么rect也需要改为mut)
+    fn area(&self) -> u32 {
+        self.width * self.length
+    }
+}
+
+fn main() {
+    let rect = Rectangle {
+        width: 30,
+        length: 50,
+    };
+    println!("{}", rect.area());
+
+    println!("{:?}", rect);
+}
+```
+
+* 在impl块里定义方法
+* 方法的第一个参数可以是&self， 也可以获得其所有权 或 可变借用。 和其他参数一样
+* 使用方法后，就避免了，每次都要self传进去。 
+* 更好的代码组织
+
+#### 方法调用的运算符
+* C/C++： object->something() 和 (*object).something()，用于区分是指针调用还是对象直接调用，
+  使用(*object)相当于对对象解引用，然后调用方法。这两者是等价的。
+* Rust没有 -> 运算符
+* Rust会自动引用或解引用
+  - 在调用方法时就会自动发生这种行为
+* 在调用方法时，Rust 会根据清空自动添加&、&mut或*，以便object可以匹配方法的签名  
+* 下面两行代码效果相同：方法签名为 fn distance(&self, &p2)
+  - p1.distance(&p2);
+  - (&p1).distance(&p2);
+
+#### 方法参数
+* 方法可以有多个参数
+* 示例：
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    length: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.length
+    }
+
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.length > other.length
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        length: 50,
+    };
+    let rect2 = Rectangle {
+        width: 10,
+        length: 40,
+    };
+    let rect3 = Rectangle {
+        width: 35,
+        length: 50,
+    };
+
+    println!("{}", rect1.can_hold(&rect2));
+    println!("{}", rect1.can_hold(&rect3));
+}
+
+```
+
+#### 关联函数
+* 可以在impl块里定义不把self作为第一个参数的函数，它们叫关联函数(不是方法)
+  - 例如：String::from()
+* 关联函数通常用于构造器(示例)
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    length: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.length
+    }
+
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.length > other.length
+    }
+
+    fn square(size: u32) -> Rectangle {
+        Rectangle {
+            width: size,
+            length: size,
+        }
+    }
+}
+
+fn main() {
+    let s = Rectangle::square(10); // 相当于这个函数位于Rectangle这个类型的命名空间里面
+    let rect1 = Rectangle {
+        width: 30,
+        length: 50,
+    };
+    let rect2 = Rectangle {
+        width: 10,
+        length: 40,
+    };
+    let rect3 = Rectangle {
+        width: 35,
+        length: 50,
+    };
+
+    println!("{}", rect1.can_hold(&rect2));
+    println!("{}", rect1.can_hold(&rect3));
+}
+```
+
+* :: 符号
+  - 关联函数
+  - 模块创建的命名空间
+
+#### 多个impl块
+* 每个struct允许拥有多个impl块
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    length: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.length
+    }
+
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.length > other.length
+    }
+}
+
+impl Rectangle {
+    fn square(size: u32) -> Rectangle {
+        Rectangle {
+            width: size,
+            length: size,
+        }
+    }
+}
+
+fn main() {
+    let s = Rectangle::square(10); // 相当于这个函数位于Rectangle这个类型的命名空间里面
+    let rect1 = Rectangle {
+        width: 30,
+        length: 50,
+    };
+    let rect2 = Rectangle {
+        width: 10,
+        length: 40,
+    };
+    let rect3 = Rectangle {
+        width: 35,
+        length: 50,
+    };
+
+    println!("{}", rect1.can_hold(&rect2));
+    println!("{}", rect1.can_hold(&rect3));
+}
+```
