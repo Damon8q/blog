@@ -1476,7 +1476,83 @@ fn main() {
 }
 ```
 
+### Package, Crate, Module
+#### Rust的代码组织
+* 代码组织主要包括：
+  - 哪些细节可以暴露，哪些细节是私有的
+  - 作用域内哪些名称有效
+  - ... ...
+* 模块系统：
+  - Package(包)：Cargo的特性，让你构建、测试、共享crate （可以认为是最顶层的）
+  - Crate(单元包)：一个模块树，它可以产生一个library或可执行文件
+  - Module(模块)、use：让你控制代码的组织、作用域、私有路径
+  - Path(路径)：为struct、function或module等项目命名的方式
 
+#### Package 和 Crate
+* Crate的类型：
+  - binary
+  - library
+* Crate Root:
+  - 是源代码文件，一个入口文件
+  - Rust编译器从这里开始，组成你的Crate的根Module
+* 一个Package：
+  - 包含1个Cargo.toml，它描述了如何构建这些Crates(一个Package下面可以有多个Crates)
+  - 只能包含0-1个library crate
+  - 可以包含任意数量的binary crate
+  - 但必须至少包含一个crate(library 或 binary)
+
+#### Cargo的惯例
+* src/main.rs:
+  - binary crate的crate root
+  - crate名与package名相同
+* src/lib.rs:
+  - package 包含一个library crate
+  - library crate 的 crate root
+  - crate 名与package名相同
+* Cargo把crate root文件交给rustc来构建library或binary
+
+* 一个package可以同时包含src/main.rs和src/lib.rs
+  - 意味着包含一个binary crate，一个library crate
+  - 名称呢个都与package名相同
+* 一个package可以有多个binary crate：
+  - 文件放在src/bin
+  - 每个文件是单独的binary crate
+  
+#### Crate的作用
+* 将相关功能组合到一个作用域内，便于在项目间进行共享
+  - 防止冲突
+* 例如rand crate，访问它的功能需要通过它的名字：rand
+
+#### 定义module来控制作用域和私有性
+* Module：
+  - 在一个crate内，将代码进行分组
+  - 增加可读性，易于复用
+  - 控制项目(也就是条目item)的私有性。public、private
+* 建立module：
+  - mod关键字
+  - 可嵌套
+  - 可包含其他项(struct、enum、常量、trait、函数等)的定义
+
+```rust
+mod front_of_house {
+    mod hosting {
+        fn add_to_waitlist() {}
+        fn seat_at_table() {}
+    }
+
+    mod serving {
+        fn take_order() {}
+        fn serve_order() {}
+        fn take_payment() {}
+    }
+}
+```
+
+* src/main.rs 和 src/lib.rs 叫做crate root：
+  - 这两个文件（任意一个）的内容形成了名为crate的模块，位于整个模块树的根部。 
+  - 也就是说整个模块树都隐式的放在名为crate的根模块树下面了
+  
+![image](crate_tree.png)
 
 
 
