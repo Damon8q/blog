@@ -1554,6 +1554,263 @@ mod front_of_house {
   
 ![image](crate_tree.png)
 
+### 路径Path
+* 为了在Rust的模块中找到某个条目，需要使用路径
+* 路径的两种形式：
+  - 绝对路径：从crate root开始，使用crate名或字面值crate
+  - 相对路径：从当前模块开始，使用self，super或当前模块的标识符
+* 路径至少由一个标识符组成，标识符之间使用::
+
+#### 私有边界(privacy boundary)
+* 模块不仅可以组织代码，还可以定义私有边界
+* 如果想把函数或者struct等设为私有，可以将它放到某个模块中
+* Rust中所有的条目（函数，方法，struct，enum，模块，常量）默认都是私有的
+* 父级模块无法访问子模块中的私有条目
+* 子模块里可以使用所有祖先模块中的条目
+
+#### pub关键字
+* 使用pub关键字来将某些条目标记为公共的
+
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+pub fn eat_at_restaurant() {
+    // 绝对路径：从根模块crate开始
+    crate::front_of_house::hosting::add_to_waitlist();
+
+    // 相对路径：由于eat_at_restaurant和front_of_house是同一级的，因此可以直接访问front_of_house
+    front_of_house::hosting::add_to_waitlist();
+}
+```
+
+#### super关键字
+* super：用来访问父级模块路径中的内容，类似文件系统中的 ..
+
+```rust
+fn server_order() {}
+
+mod back_of_house {
+    fn fix_incorrect_order() {
+        cook_order();
+        super::server_order(); // 相对路径
+        crate::server_order(); // 绝对路径
+    }
+
+    fn cook_order() {}
+}
+
+```
+
+#### pub struct
+* pub放在struct前：
+  - struct是公共的
+  - struct的字段默认是私有的
+* struct的字段需要单独设置pub来变成共有
+
+```rust
+mod back_of_house {
+    pub struct Breakfast {
+        pub toast: String,
+        seasonal_fruit: String,
+    }
+
+    impl Breakfast {
+        pub fn summer(tost: &str) -> Breakfast {
+            Breakfast {
+                toast: String::from(tost),
+                seasonal_fruit: String::from("peaches"),
+            }
+        }
+    }
+}
+
+pub fn eat_at_restaurant() {
+    let mut meal = back_of_house::Breakfast::summer("Rye");
+    meal.toast = String::from("Wheat");
+
+    println!("I'd like {} toast please", meal.toast);
+
+    // 访问私有变量会报错
+    // meal.seasonal_fruit = String::from("blueberries");
+}
+```
+
+#### pub enum
+* pub放在enum前：
+  - enum是公共的
+  - enum的变体也都是公共的
+
+```rust
+mod back_of_house {
+    pub enum Appetizer {
+        Soup,
+        Salad,
+    }
+}
+
+```
+
+### use关键字
+* 可以使用use关键字将路径导入到作用域内
+  - 仍遵循私有性规则（也就是只有公共的才能够使用）
+
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+use crate::front_of_house::hosting; // 相当于定义了一个mod hosting，在此文件中可以直接使用hosting了
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+```
+
+* 使用use来指定相对路径
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+use front_of_house::hosting; // 相当于定义了一个mod hosting，在此文件中可以直接使用hosting了
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+```
+
+#### use的习惯用法
+* 函数：将函数的父级模块引入作用域，级指定到父级。 （如果直接引入到函数，则容易出现冲突）
+* struct，enum，其他：指定完整路径（指定到本身）
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let mut map = HashMap::new();
+    map.insert(1, 2);
+}
+
+```
+* 同名条目：指定到父级，即回退到和函数一样
+
+#### as 关键字
+* as 关键字可以为引入的路径指定本地的别名
+```rust
+use std::fmt::Result;
+use std::io::Result as IoResult;
+
+fn f1() -> Result {}
+fn f2() -> IoResult {}
+
+fn main() {
+}
+```
+
+#### 使用pub use重新导出名称
+* 使用use将路径(名称)导入到作用域内后，该名称在此作用域内是私有的
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+// use导入hosting，默认hosting是私有的，对外不可见。 可以添加pub，让其对外可见
+pub use crate::front_of_house::hosting; 
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+
+```
+* pub use：重导出
+  - 将条目引入作用域
+  - 该条目可以被外部代码引入到它们的作用域
+
+#### 使用外部包(package)
+1. Cargo.toml添加依赖的包(package)
+  - 会从https://crates.io下载相应的包及其依赖项
+2. use将特定条目引入作用域
+
+* 标准库(std)也被当作外部包
+  - 但不需要修改Cargo.toml来包含std
+  - 需要使用use将std中的特定条目引入当前作用域
+
+#### 使用嵌套路径清理大量的use语句
+* 如果使用同一个包或模块下的多个条目
+* 可以使用嵌套路径在同一行内将上述条目进行引入：
+  - 路径相同的部分::{路径差异部分}
+  
+```rust
+// use std::cmp::Ordering;
+// use std::io;
+
+// 简写
+use std::{cmp::Ordering, io};
+
+fn main() {}
+```
+
+* 如果两个use路径之一是另一个的子路径
+  - 使用self
+
+```rust
+// use std::io;
+// use std::io::Write;
+
+// 简写
+use std::io::{self, Write};
+
+fn main() {}
+```
+
+* 使用 * 可以把路径中所有的公共条目都引入到作用域
+* 注意：谨慎使用
+* 应用场景：
+  - 测试：将所有被测试代码引入到test模块
+  - 有时候用于预导入（prelude）模块
+
+### 将模块拆分为不同文件
+* 模块定义时，如果模块名后边是“;”，而不是模块代码：
+  - Rust会从与模块同名的文件中加载内容
+  - 模块树的结构不会变化
+* 随着模块逐渐变大，该技术让你可以把模块的内容移动到其他文件中
+
+```rust
+// lib.rs 内容
+mod front_of_house;
+
+use crate::front_of_house::hosting;
+
+pub fn eat_at_restaurant() {
+  hosting::add_to_waitlist();
+}
+
+// front_of_house.rs 内容
+pub mod hosting;
+
+// hosting.rs 内容
+pub fn add_to_waitlist() {}
+
+```
+
+文件树如图：
+
+![image](module_tree.png)
+
+
+
+
+
+
 
 
 
