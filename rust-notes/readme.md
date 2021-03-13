@@ -2048,12 +2048,69 @@ fn main() {
 }
 ```
 
+#### 对String按索引的形式进行访问
+* 按索引语法访问String的某部分，会报错
+* Rust的字符串不支持索引语法访问
+* 内部表示
+  - String是对Vec<u8>的包装
+  - len()方法
+```rust
+fn main() {
+    let len1 = String::from("hello").len();
+    println!("len1:{}", len1); // 5个字节
 
+    let len2 = String::from("李").len();
+    println!("len2:{}", len2); // 3 个字节
+}
+```
 
+正是因为字符串的一个下标没法直接对应到一个字符，Rust为了防止出现一些意想不到的问题，直接禁止字符串的下标访问。
 
+#### 字节、标量值、字形簇(Bytes, Scalar Values, Grapheme Clusters)
+* Rust有三种看待字符串的方式：
+  - 字节
+  - 标量值
+  - 字形簇（最接近所谓的“字母”）
+```rust
+fn main() {
+    let s = "李四你好";
 
+    for b in s.bytes() {
+        println!("{}", b); // 打印最底层的每个字节
+    }
+    for c in s.chars() {
+        println!("{}", c); // 打印utf-8每个字符
+    }
+  
+}
+```
 
+* Rust不允许对String进行索引的最后一个原因：
+  - 索引操作应消耗一个常量时间(O(1))
+  - 而String无法保证：需要遍历所有内容，来确定有多少个合法的字符
 
+#### 切割String
+* 可以使用[] 和 一个范围 来创建字符串的切片
+  - 必须谨慎使用
+  - 如果切割时跨越了字符边界，程序会panic
+```rust
+fn main() {
+    let s = "李四你好";
+
+    let sub = &s[0..6]; // 如果切割边界不正确，则会panic。如&s[0..4]
+    println!("{}", sub);
+}
+```
+
+#### 遍历String的方法
+* 对于标量值：chars()方法
+* 对于字节：bytes()方法
+* 对于字形簇：很复制，标准库未提供
+
+#### String不简单
+* Rust选择将正确处理String数据作为所有Rust程序的默认行为
+  - 程序员必须在处理UTF-8数据之前投入更多的精力
+* 可防止在开发后期处理设计非ASCII字符的错误
 
 
 
