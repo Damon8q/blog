@@ -1807,8 +1807,246 @@ pub fn add_to_waitlist() {}
 ![image](module_tree.png)
 
 
+### 常用的集合
 
+#### 使用Vector存储多个值
+* Vec<T>, 叫做vector
+  - 由标准库提供
+  - 可存储多个值
+  - 只能存储相同类型的数据
+  - 值在内存中连续存放
 
+#### 创建Vector
+* Vec::new 函数
+```rust
+fn main() {
+    let v: Vec<i32> = Vec::new();
+}
+```
+
+* 使用初始值创建Vec<T>，使用 vec! 宏
+```rust
+fn main() {
+    // let v: Vec<i32> = Vec::new();
+    let v = vec![1, 2, 3];
+}
+```
+
+#### 更新Vector
+* 向Vector添加元素，使用push方法
+```rust
+fn main() {
+    let mut v= Vec::new();
+    v.push(1);
+    v.push(2);
+    v.push(3);
+   
+}
+```
+
+#### 删除Vector
+* 与任何其他struct一样，当Vector离开作用域后
+  - 它就会被清理掉
+  - 它所有的元素也会被清理掉
+
+#### 读取Vector的元素
+* 两种方式可以引用Vector里的值：
+  - 索引
+  - get方法
+```rust
+fn main() {
+    let v = vec![1, 2, 3, 4, 5];
+    let third: &i32 = &v[2];
+    println!("The third element is {}", third);
+
+    // 通过索引的方式访问，如果超出范围，则程序会发生恐慌退出
+    // 而通过v.get方式，即使超出范围，也不会发生恐慌，只会匹配None
+    // let third: &i32 = &v[100];
+
+    match v.get(2) {
+        Some(third) => println!("The third element is {}", third),
+        None => println!("There is no third element"),
+    }
+}
+```  
+
+* 索引 vs get 处理访问越界
+  - 索引：panic
+  - get：返回None
+
+#### 所有权和借用规则
+* 不能在同一作用域内同时拥有可变和不可变借用（引用）
+```rust
+// 编译报错：error[E0502]: cannot borrow `v` as mutable because it is also borrowed as immutable
+fn main() {
+    let mut v = vec![1, 2, 3, 4];
+    let first = &v[0]; // 发生不可变借用
+    v.push(5);  // 发生可变借用
+
+    println!("The first element is {}", first); // 发生不可变借用
+
+    println!("Hello world!");
+}
+```
+
+底层出错原理：为什么访问第一个元素，还要关心或者限制往vector末尾添加元素呢？
+
+Vector中的元素在内存中是连续存放的，在往Vector添加元素的时候，内存中可能就没有这么大的连续内存块了，
+就可能发生内存重新分配，以找到足够大的内存来存放添加元素后的Vector，这样原来的内存就可能释放和无效了，
+如果规则允许的话，first仍会指向原来的内存地址，这样就出现内存问题了。 因此这样的借用规则就可以防止类似的问题发生。
+
+#### 遍历Vector中的值
+* for循环
+```rust
+fn main() {
+    let mut v = vec![100, 22, 33];
+    for i in &mut v {
+        *i += 50;
+    }
+
+    for i in v {
+        println!("{}", i);
+    }
+}
+```
+
+#### 使用enum来存储多种数据类型
+* Enum的变体可以附加不同类型的数据
+* Enum的变体定义在同一个enum类型下
+```rust
+enum SpreadsheetCell {
+    Int(i32),
+    Float(f64),
+    Text(String),
+}
+
+fn main() {
+    let row = vec![
+        SpreadsheetCell::Int(3),
+        SpreadsheetCell::Text(String::from("blue")),
+        SpreadsheetCell::Float(10.12),
+    ];
+}
+
+```
+
+Vector里面之所以需要存放相同类型，是因为Vector中存放多个元素，如果每个数据类型不同，我们在对元素进行遍历处理的时候，
+有的元素可能有这个功能，有的则没有，这样就很容易出问题。 而枚举这种方式，虽然里面确实存储了不同数据，但是枚举可以通过match表达式来处理，
+这样就避免出问题。
+
+#### String类型
+* Rust开发者经常会被字符串困扰的原因：
+  - Rust倾向于暴露可能的错误
+  - 字符串数据结构复制
+  - UFT-8
+
+* 字符串是什么
+  - Byte的集合
+  - 提供了一些方法
+    * 能将byte解析为文本
+    
+* Rust的核心语言层面，只有一个字符串类型：字符串切片str(或 &str)
+* 字符串切片：对存储在其他地方、UTF-8编码的字符串的引用
+  - 字符串字面值：存储在二进制文件中，也是字符串切片
+
+* String类型：
+  - 来自 标准库 而不是 核心语言
+  - 可增长、可修改、可获得所有权
+  - UTF-8编码
+
+#### 通常说的字符串是指？
+* String 和 &str
+  - 标准库里用的多
+  - UTF-8 编码
+
+* 本节主要讲String
+
+#### 其他类型的字符串
+* Rust的标准库还包含了很多其他的字符串类型，例如：OsString, OsStr, CString, CStr
+  - String vs Str后缀：拥有或借用的变体
+  - 可存储不同编码的文本或在内存中以不同的形式展现
+* 某些Library crate针对存储字符串可提供更多选项
+
+#### 创建一个新的字符串(String)
+* 很多Vec<T>的操作都可用于String
+* String::new()函数
+* 使用初始值来创建String：
+  - to_string()方法，可用于实现了Display trait的类型，包括字符串字面值
+  - String::from()函数，从字面值创建String
+```rust
+fn main() {
+    let s1 = String::new();
+    
+    let data = "initial string";
+    let s2 = data.to_string();
+    
+    let s3 = "initial string".to_string();
+
+    let s4 = String::from("initial string");
+}
+```
+
+#### 更新String
+* push_str()方法：把一个字符串切片附加到String
+```rust
+fn main() {
+    let mut s = String::from("foo");
+    s.push_str("bar");
+
+    println!("{}", s);
+
+    let mut s2 = String::from("foo");
+    let tmp = String::from("bar");
+    s2.push_str(&tmp);
+    println!("s2:{}, tmp:{}", s2, tmp);
+}
+
+```
+
+* push()方法：把单个字符附加到String
+```rust
+fn main() {
+    let mut s = String::from("lo");
+    s.push('l');
+    println!("{}", s);
+}
+```
+
+* +: 连接字符串
+  - 使用了类似这个签名的方法: fn add(self, s: &str) -> String {... }
+    * 标准库中的add方法使用泛型
+    * 只能把&str添加到String
+    * 解引用强制转换（deref coercion）
+```rust
+fn main() {
+    let s1 = String::from("Hello, ");
+    let s2 = String::from("World!");
+
+    let s3 = s1 + &s2;
+
+    println!("{}", s3);
+
+    println!("{}", s1); // 报错：因为s1的所有权已经发生了转移
+    println!("{}", s2); // s2只是发生了借用，所有权没有转移因此可以继续使用
+}
+```
+
+* format!: 连接多个字符串
+  - 和println!类似，但返回字符串
+  - 不会获得参数所有权
+```rust
+fn main() {
+    let s1 = String::from("tic");
+    let s2 = String::from("tac");
+    let s3 = String::from("toe");
+
+    // let s3 = s1 + "-" + &s2 + "-" + &s3;
+    // println!("{}", s3);
+
+    let s = format!("{}-{}-{}", s1, s2, s3);  // format宏方式不会取得任何参数的所有权
+    println!("{}", s);
+}
+```
 
 
 
