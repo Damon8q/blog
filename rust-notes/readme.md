@@ -2112,6 +2112,144 @@ fn main() {
   - 程序员必须在处理UTF-8数据之前投入更多的精力
 * 可防止在开发后期处理设计非ASCII字符的错误
 
+#### HashMap<K, V>
+* 键值对的形式存储数据，一个键(Key)对应一个值(Value)
+* Hash函数：决定如何在内存中存放K和V
+* 适用场景：通过K(任何类型)来寻找数据，而不是通过索引
+
+#### 创建HashMap
+* 创建空HashMap：new()函数
+* 添加数据：insert()方法
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Red"), 50);
+}
+```
+
+* HashMap用的比较少，不在Prelude中
+* 标准库对其支持较少，没有内置的宏来创建HashMap
+* 数据存储在heap上
+* 同构的。一个HashMap中：
+  - 所有的K必须是同一种类型
+  - 所有的V必须是同一种类型
+
+#### 另一种创建HashMap的方式：collect方法
+* 在元素类型为Tuple的Vector上使用collect方法，可以创建一个HashMap：
+  - 要求Tuple有两个值：一个作为K，一个作为V
+  - collect方法可以把数据整合成很多种集合类型，包括HashMap
+    * 返回值需要显式指明类型
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let teams = vec![String::from("Blue"), String::from("Yellow")];
+    let initial_scores = vec![10, 50];
+
+    // zip()接收一个参数，将调用者中的元素与参数中的元素一一对应组成Tuple，若数量不匹配，多的元素会被丢掉
+    // collect()方法再形成了一个HashMap，元素的顺序并不固定，每一次run都可能不一样
+    // 当然key->value的顺序是由zip一一对应的，不是由collect决定
+    // 必须要指明scores变量的类型（这里是HashMap），如果不指定就会报错，因为collect方法可以返回多种集合类型
+    // 而HashMap的K，V用了两个下划线，并没有指定具体类型，因为Rust能根据具体的数据自动推导出来具体的类型
+    let scores: HashMap<_, _> = teams.iter().zip(initial_scores.iter()).collect();
+}
+
+```  
+
+#### HashMap和所有权
+* 对于实现了Copy trait的类型（例如i32），值会被复制到HashMap中
+* 对于拥有所有权的值（例如String），值会被移动，所有权会转移给HashMap
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let field_name = String::from("favorite color");
+    let field_value = String::from("Blue");
+
+    let mut map = HashMap::new();
+    map.insert(field_name, field_value); // 这一行之后，field_name， field_value就失效了，转移给了map
+
+    println!("{}: {}", field_name, field_value); // 这里打印即会报错
+}
+```
+* 如果将值的引用插入到HashMap，值本身不会移动
+  - 在hashMap有效的期间，被引用的值必须保持有效
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let field_name = String::from("favorite color");
+    let field_value = String::from("Blue");
+
+    let mut map = HashMap::new();
+    map.insert(&field_name, &field_value); 
+
+    println!("{}: {}", field_name, field_value); // 这里打印就不会报错
+}
+```
+
+#### 访问HashMap中的值
+* get 方法
+  - 参数：K
+  - 返回：Option<&V>
+
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Yellow"), 50);
+
+    let team_name = String::from("Blue");
+    let score = scores.get(&team_name);
+
+    match score {
+        Some(s) => println!("{}", s),
+        None => println!("team not exist"),
+    }
+}
+```
+
+#### 遍历HashMap
+* for循环
+
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Yellow"), 50);
+
+    // 遍历scores，传的是引用，因为通常遍历之后我们还需要继续使用此map
+    // 如果直接 in scores，则scores所有权将发生转移，后续则不能继续使用scores变量
+    for (k, v) in &scores {
+        println!("{}, {}", k, v);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
