@@ -2236,11 +2236,72 @@ fn main() {
 }
 ```
 
+#### 更新HashMap<K, V>
+* HashMap大小可变
+* 每个K同时只能对应一个V
+* 更新HashMap中的数据:
+  - K已经存在，对应一个V
+    * 替换现有的V
+    * 保留现有的V，忽略新的V
+    * 合并现有的V和新的V
+  - K不存在
+    * 添加一对新的K，V
 
+* 如果向HashMap插入一对KV，然后再插入同样的K，但是不同的V，那么原来的V会被替换掉
+* entry方法：检查指定的K是否对应一个V
+  - 参数为K
+  - 返回enum Entry：代表值是否存在
+* Entry的or_insert()方法：
+  - 返回：
+    * 如果K存在，返回到对应V的一个可变引用
+    * 如果K不存在，将方法参数作为K的新值插进去，返回到这个值的可变引用
 
+```rust
+use std::collections::HashMap;
 
+fn main() {
+    let mut scores = HashMap::new();
 
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Blue"), 50);
+    println!("{:?}", scores); // Blue -> 50
 
+    let mut scores = HashMap::new();
+    scores.insert(String::from("Blue"), 10);
+
+    let e = scores.entry(String::from("Yellow"));
+    println!("{:?}", e);
+    e.or_insert(50);
+    scores.entry(String::from("Blue")).or_insert(50);
+    println!("{:?}", scores);
+}
+```
+
+#### 基于现有V来更新V
+```rust
+use std::collections::HashMap;
+
+// 统计一个字符串中每个单词出现的次数
+fn main() {
+    let text = "hello world wonderful world";
+
+    let mut map = HashMap::new();
+    for word in text.split_whitespace() {
+        let count = map.entry(word).or_insert(0);
+        *count += 1;
+    }
+
+    println!("{:#?}", map);
+}
+
+```
+
+#### Hash函数
+* 默认情况下，HashMap使用加密功能强大的Hash函数，可以抵抗拒绝服务（DoS）攻击
+  - 不是可用的最快的Hash算法
+  - 但具有更好的安全性
+* 可以指定不同的hasher来切换到另一个函数
+  - hasher是实现了BuildHasher trait的类型
 
 
 
