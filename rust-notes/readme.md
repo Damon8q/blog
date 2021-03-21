@@ -2649,15 +2649,100 @@ enum Result<T, E> {
 
 #### 方法定义中的泛型
 * 为struct或enum实现方法的时候，可以在定义中使用泛型
+```rust
+struct Point<T> {
+    x: T,
+    y: T,
+}
 
+// 在impl关键字后面加上<T>，表示针对泛型T实现的方法x，而不是具体某个类型的方法x
+impl<T> Point<T> {
+    fn x(&self) -> &T {
+        &self.x
+    }
+}
 
+// 针对具体类型而实现的方法，impl关键字后，就不需要跟<T>了
+// 表示只有T为i32时，才有此方法。而其他类型没有此方法
+impl Point<i32> {
+    fn x1(&self) -> &T {
+        &self.x
+    }
+}
 
+fn main() {
+    let integer = Point { x: 5, y: 1 };
+    integer.x();
+}
 
+```
 
+* 注意：
+  - 把T放在impl关键字后，表示类型T上实现方法
+    * 例如：impl<T> Point<T>
+  - 只针对具体类型实现方法（其余类型没有实现方法）：
+    * 例如：impl Point<f32>
 
+* struct里的泛型参数可以和方法的泛型类型参数不同
+```rust
+struct Point<T, U> {
+    x: T,
+    y: U,
+}
 
+impl<T, U> Point<T, U> {
+    fn mixup<V, W>(self, other: Point<V, W>) -> Point<T, W> {
+        Point {
+            x: self.x,
+            y: other.y,
+        }
+    }
+}
 
+fn main() {
+    let p1 = Point { x: 5, y: 4 };
+    let p2 = Point { x: "hello", y: 'c' };
 
+    let p3 = p1.mixup(p2);
+
+    println!("p3.x = {}, p3.y = {}", p3.x, p3.y);
+}
+
+```
+
+#### 泛型代码的性能
+* 使用泛型的代码和使用具体类型的代码运行速度是一样的
+* 单态化（monomorphization）:
+  - 在编译时将泛型替换为具体类型的过程
+```rust
+// Rust在编译这段代码时就会执行单态化：
+// 编译器首先会读取在Option<T>中使用过的值，进而它确认了两种Option<T>;
+// 一种是Option<i32>, 一种是Option<f64>;
+// 因此在此程序中，编译器会将Option<T>展开为后面注释中的两种具体的Option枚举;
+// 也就是将泛型的定义，替换为两个具体类型的定义了。
+// 单态后的main函数大概变为了，注释里面的main函数的样子
+fn main() {
+    let integer = Some(5);
+    let float = Some(5.0);
+}
+
+// enum Option_i32 {
+//     Some(i32),
+//     None,
+// }
+//
+// enum Option_f64 {
+//     Some(f64),
+//     None,
+// }
+//
+// fn main() {
+//     let integer = Option_i32::Some(5);
+//     let float = Option_f64::Some(5.0);
+//
+// }
+
+```  
 
 
 
