@@ -2344,13 +2344,256 @@ panic = 'abort'
 * 可通过调用panic! 的函数的回溯信息来定位引起问题的代码  
 * 通过设置环境变量RUST_BACKTRACE 可得到回溯信息
 
+#### Result与可恢复的错误
+* Result枚举：
+```rust
+enum Result<T, E> {
+  Ok(T),
+  Err(E),
+}
+```
+* T:操作成功情况下，Ok变体里返回的数据的类型
+* E:操作失败情况下，Err变体里返回的错误的类型
+
+#### 处理Result的一种方式：match表达式
+* 和Option枚举一样，Result及其变体也是由prelude带入作用域
+```rust
+use std::fs::File;
+
+fn main() {
+    let f = File::open("hello.txt");
+
+    let f = match f {
+        Ok(file) => file,
+        Err(err) => {
+            panic!("Err opening file {:?}", err);
+        }
+    };
+}
+```
+
+#### 匹配不同的错误
+```rust
+use std::fs::File;
+use std::io::ErrorKind;
+
+fn main() {
+    let f = File::open("hello.txt");
+
+    let f = match f {
+        Ok(file) => file,
+        Err(err) => match err.kind() {
+            ErrorKind::NotFound => match File::create("hello.txt") {
+                Ok(fc) => fc,
+                Err(e) => panic!("Error creating file: {:?}", e),
+            },
+            other_error => panic!("Error opening the file: {:?}", other_error),
+        },
+    };
+}
+```
+* 上例中使用了很多match...
+* match很有用，但是很原始
+* 闭包(closure)。 Result<T, E> 有很多方法：
+  - 它们接收闭包作为参数
+  - 这些方法都是使用match来实现
+  - 使用这些方法会让代码更简洁
+```rust
+use std::fs::File;
+use std::io::ErrorKind;
+
+fn main() {
+    let f = File::open("hello.txt");
+
+    // let f = match f {
+    //     Ok(file) => file,
+    //     Err(err) => match err.kind() {
+    //         ErrorKind::NotFound => match File::create("hello.txt") {
+    //             Ok(fc) => fc,
+    //             Err(e) => panic!("Error creating file: {:?}", e),
+    //         },
+    //         other_error => panic!("Error opening the file: {:?}", other_error),
+    //     },
+    // };
+    // 下面的闭包简写方式，等价于上面的match形式
+    let f = File::open("hello.txt").unwrap_or_else(|err| {
+        if err.kind() == ErrorKind::NotFound {
+            File::create("hello.txt").unwrap_or_else(|err| {
+                panic!("Error opening file {:?}", err);
+            })
+        } else {
+            panic!("Error opening file {:?}", err);
+        }
+    });
+}
+
+```
+
+#### unwrap
+* unwrap: match表达式的一个快捷方法：
+  - 如果Result结果是Ok，那么返回Ok里面的值
+  - 如果Result结果是Err，那么会调用panic! 宏
+```rust
+use std::fs::File;
+
+fn main() {
+    let f = File::open("hello.txt");
+
+    let f = match f {
+        Ok(file) => file,
+        Err(error) => {
+            panic!("Error opening file {:?}", error)
+        }
+    };
+    
+    // 下面这句话就相当于上面的match表达式写法，但是代码更简洁
+    let f = File::open("hello.txt").unwrap();
+}
+
+```
+
+#### expect
+* expect: 和unwrap类似，但可指定错误信息
+```rust
+use std::fs::File;
+
+fn main() {
+    let f = File::open("hello.txt");
+
+    let f = File::open("hello.txt").expect("无法打开文件 hello.txt");
+}
+```
+
+#### 传播错误
+* 在函数处理错误
+* 将错误返回给调用者
+```rust
+use std::fs::File;
+use std::io;
+use std::io::Read;
+
+fn main() {
+    let result = read_username_from_file();
+}
+
+fn read_username_from_file() -> Result<String, io::Error> {
+    let f = File::open("hello.txt");
+
+    let mut f = match f {
+        Ok(file) => file,
+        Err(e) => return Err(e),
+    };
+
+    let mut s = String::new();
+    match f.read_to_string(&mut s) {
+        Ok(_) => Ok(s),
+        Err(e) => Err(e),
+    }
+}
+```
+
+#### ? 运算符
+* ? 运算符：传播错误的一种快捷方式
+```rust
+use std::fs::File;
+use std::io;
+use std::io::Read;
+
+fn main() {
+    let result = read_username_from_file();
+}
+
+fn read_username_from_file() -> Result<String, io::Error> {
+    let mut f = File::open("hello.txt")?;
+    let mut s = String::new();
+    f.read_to_string(&mut s)?;
+
+    Ok(s)
+}
+```
+* 如果Result是Ok：Ok中的值就是表达式的结果，然后继续执行程序
+* 如果Result是Err：Err就是整个函数的返回值，就像使用了return
+
+#### ? 与 from 函数
+* Trait std::convert::From 上的from函数：
+  - 用于错误之间的转化
+* 被 ? 所应用的错误，会隐式的被from函数处理  
+* 当 ? 调用from函数时：
+  - 它所接收的错误类型会被转化为当前函数返回类型所定义的错误类型（注意：不是所有的错误类型都能转化，要求：EA -> EB, EA from-> EB）
+* 用于：针对不同的错误原因，返回同一种错误类型
+  - 只要每个错误类型实现了转换为所返回的错误类型的from函数 就可以
+* 链式调用的例子
+```rust
+use std::fs::File;
+use std::io;
+use std::io::Read;
+
+fn main() {
+    let result = read_username_from_file();
+}
+
+fn read_username_from_file() -> Result<String, io::Error> {
+    let mut s = String::new();
+    File::open("hello.txt")?.read_to_string(&mut s)?;
+    Ok(s)
+}
+
+```
+
+#### ? 运算符只能用于返回Result的函数
+* ? 运算符与 main 函数
+* main 函数返回类型是：()
+* main 函数的返回类型也可以是：Result<T, E>
+```rust
+use std::error::Error;
+use std::fs::File;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let f = File::open("hello.txt")?;
+    Ok(())
+}
+
+```
+* Box<dyn Error> 是trait对象：
+  - 简单理解：“任何可能的错误类型”
 
 
+#### 什么时候应该使用panic!
+* 总体原则：
+  - 在定义一个可能失败的函数时，优先考虑返回Result(可能可以恢复的)
+  - 否则使用panic!
 
+#### 编写示例、原型代码、测试
+* 可以使用panic!
+  - 演示某些概念：unwrap
+  - 原型代码：unwrap、expect
+  - 测试：unwrap、expect
 
+#### 有时候你比编译器掌握更多的信息
+* 你可以确定Result就是Ok：unwrap
+```rust
+use std::net::IpAddr;
 
+fn main() {
+    let home: IpAddr = "127.0.0.1".parse().unwrap();
+}
 
+```
 
+#### 错误处理的指导性建议
+* 当代码最终可能处于损坏状态时，最好使用panic!
+* 损坏状态（Bad state）: 某些假设、保证、约定或不可变性被打破
+  - 例如非法的值、矛盾的值或空缺的值被传入代码
+  - 以及下列中的一条：
+    * 这种损坏状态并不是预期更够偶尔发生的事情
+    * 在此之后，你的代码如果处于这种损坏状态就无法运行
+    * 在你使用的类型中没有一个好的方法来将这些信息（处于损坏状态）进行编码
+
+#### 建议场景
+* 调用你的代码，传入无意义的参数值：panic!
+* 调用外部不可控代码，返回非法状态，你无法修复：panic!
+* 如果失败状态是可预期的：Result  （比如把一个字符串转化为数字，可能成功失败就是可预期的）
+* 当你的代码对值进行操作，首先应该验证这些值：panic! （比如数组越界访问等，因为一定要保证内存安全）
 
 
 
