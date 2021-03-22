@@ -2744,6 +2744,183 @@ fn main() {
 
 ```  
 
+### Trait
+* Trait告诉Rust编译器：
+  - 某种类型具有哪些并且可以与其他类型共享的功能
+* Trait: 抽象的定义共享行为
+* Trait bounds(约束)：泛型类型参数指定为实现了特定行为的类型
+* Trait与其他语言的接口（interface）类似，但有些区别
+
+#### 定义一个Trait
+* Trait的定义：把方法签名放在一起，来定义实现某种目的所必需的一组行为
+  - 关键字：trait
+  - 只有方法签名，没有具体实现
+  - trait可以有多个方法：每个方法签名占一行，以; 结尾
+  - 实现该trait的类型必须提供具体的方法实现
+```rust
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+```
+
+#### 在类型上实现trait
+* 与为类型实现方法类似
+* 不同之处：
+  - impl Xxx for Tweet {...}
+  - 在impl的块里，需要对Trait里的方法签名进行具体的实现
+```rust
+// lib.rs 文件
+pub trait Summary {
+  fn summarize(&self) -> String;
+}
+
+pub struct NewsArticle {
+  pub headline: String,
+  pub location: String,
+  pub author: String,
+  pub content: String,
+}
+
+impl Summary for NewsArticle {
+  fn summarize(&self) -> String {
+    format!("{}, by {} ({})", self.headline, self.author, self.location)
+  }
+}
+
+pub struct Tweet {
+  pub username: String,
+  pub content: String,
+  pub reply: bool,
+  pub retweet: bool,
+}
+
+impl Summary for Tweet {
+  fn summarize(&self) -> String {
+    format!("{}: {}", self.username, self.content)
+  }
+}
+
+// main.rs文件
+use rust_learning::Summary;
+use rust_learning::Tweet;
+
+fn main() {
+  let tweet = Tweet {
+    username: String::from("horse_ebook"),
+    content: String::from("of course, as you probably already know, people"),
+    reply: false,
+    retweet: false,
+  };
+  println!("1 new tweet: {}", tweet.summarize())
+}
+
+```
+
+#### 实现trait的约束
+* 可以在某个类型上实现某个trait的前提条件是：
+  - 这个类型 或 这个trait是在本地crate里定义的 （这样约束原因在于避免使用第三方trait去impl第三方struct，破坏代码结构） 
+* 无法为外部类型来实现外部的trait：
+  - 这个限制是程序属性的一部分（也就是一致性）
+  - 更具体地说是孤儿规则：之所以这样命名是因为父类型不存在
+  - 此规则确保其他人的代码不能破坏你的代码，反之亦然
+  - 如果没有这个规则，两个crate可以为同一类型实现同一个trait，Rust就不知道应该使用哪个实现了
+  
+#### 默认实现
+```rust
+pub trait Summary {
+    // fn summarize(&self) -> String;
+    fn summarize(&self) -> String {
+        String::from("Read more...")
+    }
+}
+```
+* Trait可以定义默认实现，这样即使impl了trait的struct没有再具体实现此方法，也可以在对应struct对象上调用此方法
+* 默认丝线的方法可以调用trait中其他方法，即使这些方法没有默认实现
+```rust
+// lib.rs 文件
+pub trait Summary {
+    fn summarize_author(&self) -> String;
+
+    fn summarize(&self) -> String {
+        format!("Read more from {} ...", self.summarize_author())
+    }
+}
+
+pub struct NewsArticle {
+    pub headline: String,
+    pub location: String,
+    pub author: String,
+    pub content: String,
+}
+
+impl Summary for NewsArticle {
+    fn summarize_author(&self) -> String {
+        format!("@{}", self.author)
+    }
+}
+
+// main.rs 文件
+use rust_learning::NewsArticle;
+use rust_learning::Summary;
+
+fn main() {
+  let article = NewsArticle {
+    headline: String::from("Penguins win the Stanley Cup Championship"),
+    content: String::from("some text..."),
+    author: String::from("Iceburgh"),
+    location: String::from("Pittsburgh, PA, USA"),
+  };
+  println!("summarize: {}", article.summarize())
+}
+
+```
+* 注意：无法从方法的重写实现里面调用默认的实现
+
+#### 把trait作为参数
+* impl Trait语法：适用于简单情况
+```rust
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+
+pub struct NewsArticle {}
+
+impl Summary for NewsArticle {
+    fn summarize(&self) -> String {
+        format!("article summarize...")
+    }
+}
+
+pub struct Tweet {}
+
+impl Summary for Tweet {
+    fn summarize(&self) -> String {
+        format!("Tweet summarize...")
+    }
+}
+
+pub fn notify(item: impl Summary) {
+    println!("Breaking news {}", item.summarize());
+}
+
+```
+* Trait bound语法：可用于复杂情况
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
