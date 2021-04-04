@@ -2904,18 +2904,119 @@ pub fn notify(item: impl Summary) {
 }
 
 ```
+
 * Trait bound语法：可用于复杂情况
+  - impl Trait 语法是 Trait bound的语法糖
+```rust
+// 这是基础的Trait bound语法，和上面的notify是等价的
+// 这种简单情况看不出和上面的notify有什么差别或者好处
+pub fn notify<T: Summary>(item: T) {
+    println!("Breaking news! {}", item.summarize());
+}
+// 这样就开始体现出一点点优势了
+pub fn notify2<T: Summary>(item1: T, item2: T) {
+  println!("Breaking news! {}", item1.summarize());
+}
+```
 
+* 使用 + 指定多个Trait bound
+```rust
+pub fn notify1(item1: impl Summary + Display) {
+    println!("Breaking news {}", item.summarize());
+}
 
+pub fn notify<T: Summary + Display>(item: T) {
+    println!("Breaking news! {}", item.summarize());
+}
 
+```
+但是上面两种都有一定的问题，当参数需要实现多个Trait时，会让参数签名变得很长，不易阅读。
 
+* Trait bound使用where子句
+  - 可以在方法签名后面指定where子句（用于简化多个参数，需要实现多个Trait的情况）
+```rust
+// 这个例子就是泛型的复杂情况，代码就开始变得不易阅读了
+pub fn notify<T: Summary + Display, U: Clone + Debug>(a: T, b: U) -> String {
+    format!("Breaking news! {}", a.summarize())
+}
 
+// 这种带where的语法就让代码变得更易阅读了
+pub fn notify2<T, U>(a: T, b: U) -> String 
+where
+    T: Summary + Display,
+    U: Clone + Debug,
+{
+  format!("Breaking news! {}", a.summarize())
+}
 
+```
 
+#### 实现Trait作为返回类型
+* impl Trait 语法
+```rust
+pub fn notify1() -> impl Summary {
+    NewsArticle {
+    }
+}
+```
+* 注意：impl Trait只能返回确定的同一种类型，返回可能不同类型的代码会报错
+  - impl Trait这种写法在工作方式上有一些限制，导致rust不支持
 
+#### 使用Trait bound的例子
+```rust
+fn largest<T: PartialOrd + Clone>(list: &[T]) -> &T {
+    let mut largest = &list[0];
 
+    for item in list.iter() {
+        if item > largest { // 满足std::cmp::PartialOrd trait就可以使用比较符号
+            largest = item;
+        }
+    }
+    largest
+}
 
+fn main() {
+    let str_list = vec![String::from("hello"), String::from("world")];
+    let result = largest(&str_list);
+    println!("The largest word is {}", result);
 
+    let i32_list = vec![1, 2, 3];
+    let result = largest(&i32_list);
+    println!("The largest i32 is {}", result);
+}
+```
+
+#### 使用Trait bound有条件的实现方法
+* 在使用泛型类型参数的impl块上使用Trait bound，我们可以有条件的为实现了特定Trait的类型来实现方法 
+```rust
+use std::fmt::Display;
+
+struct Pair<T> {
+    x: T,
+    y: T,
+}
+
+// 无论T是什么类型，Pair都有一个方法new
+impl<T> Pair<T> {
+    fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+}
+
+// 而只有T实现了Display和PartialOrd才具有方法cmp_display
+impl<T: Display + PartialOrd> Pair<T> {
+    fn cmp_display(&self) {
+        if self.x >= self.y {
+            println!("The largest member is x = {}", self.x);
+        } else {
+            println!("The largest member is y = {}", self.y);
+        }
+    }
+}
+```
+
+* 也可以为实现了其他Trait的任意类型有条件的实现某个Trait
+* 为满足Trait Bound的所有类型上实现Trait叫做覆盖实现（blanket implementations）
 
 
 
