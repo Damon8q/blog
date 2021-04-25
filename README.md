@@ -134,6 +134,8 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [设计SSD友好的应用](https://www.infoq.cn/article/design-ssd-friendly-application)
 
+* [牛逼哄哄的 BitMap，到底牛逼在哪？](https://mp.weixin.qq.com/s/HvC88r0b1gXkrIMMBgCuLg)
+
 
 #### Golang
 * [代码规范：Uber go style](https://github.com/uber-go/guide)
