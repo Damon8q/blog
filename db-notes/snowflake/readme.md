@@ -34,7 +34,7 @@ Snowflake独特的架构由3个关键层组成：
 * Cloud Services
 
 ### Database Storage
-当数据加载进Snowflake，其组织数据进入其内部优化，压缩，列存格式。 Snowflake存储这些优化后的数据到云存储服务中。
+当数据加载进Snowflake，其组织数据进入其内部优化，压缩，列存格式。 Snowflake存储这些优化后的数据到云存储服务中(如AWS的S3)。
 
 Snowflake管理数据存储的各个方面，包括：组织，文件大小，结构，压缩，元数据，统计信息以及其他存储方面的事情都由Snowflake处理。
 数据对象不能直接被用户可视化或可见，想让其可见只能通过在Snowflake上执行SQL操作。
