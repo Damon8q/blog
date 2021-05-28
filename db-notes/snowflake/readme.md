@@ -1,11 +1,13 @@
 # snowflake学习笔记
 记录调研snowflake过程中的所思所感。 
 
-snowflake是一款云上的在线数据仓库产品，其称为：数据平台(data platform)。 目前市值679亿美元（最高时1200亿美元）。
+Snowflake是一款云上的在线数据仓库产品，其称为：数据平台(data platform)。 目前市值679亿美元（最高时1200亿美元）。
 与传统产品相比，snowflake可以实现更快、更易于使用、更灵活的数据库存储、处理和分析解决方案。
 
-snowflake数据平台，不是基于现有数据库技术或者大数据平台，如Hadoop等。 
-它通过将一个全新的SQL查询引擎和一个创新的云原生架构结合起来。
+Snowflake数据平台，不是基于现有数据库技术或者大数据平台，如Hadoop等。 
+它通过将一个全新的SQL查询引擎和一个创新的云原生架构结合起来。 
+Snowflake支持标准SQL：包含ANSI SQL:1999,SQL:2003的子集及语法扩展。 标准SQL部分，可大致认为和PostgreSQL相同。
+ANSI是American National Standards Institute的缩写，即美国国家标准学会。
 对于用户来说，snowflake提供了企业分析数据库所需的所有功能，并且附加了许多特殊功能及独特能力（如数据共享）。
 
 ## 数据平台作为云服务(Data Platform as a Cloud Service)
