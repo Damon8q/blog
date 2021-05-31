@@ -72,3 +72,6 @@ Snowflake支持多种方式连接到其服务：
 ## 目录
 * [初步使用体验及思考](初步使用体验及思考.md)
 * Snowflake论文解析（TODO）
+
+## 参考资料
+* [Snowflake文档](https://docs.snowflake.com/en/)
