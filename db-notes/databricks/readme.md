@@ -4,8 +4,6 @@ Databricks本身是一家公司，旗下有多款开源产品，包括：Spark�
 
 databricks最新估值为280亿美元。
 
-此学习笔记将重点关注，databricks整体对外提供的产品形式，以及Delta Lake这个产品的架构。
-
 ## 核心开源组件说明
 ### Spark
 Spark是一款大数据分析引擎，是“统一数据分析平台”的最好践行者。其扮演者承上启下的角色。
@@ -40,13 +38,31 @@ Delta Sharing是一个数据共享的开源协议（基于REST HTTP协议）。
 
 
 ### Delta Lake
-Delta Lake是数据的存储层，相对重点的说明。
+Delta Lake是为Spark等大数据引擎提供了可扩展、ACID事务的存储层。 其基于现有的存储系统而构建，如：S3、ADLS、GCS、HDFS。
 
+![image](Delta-Lake-marketecture-0423c.png)
 
-
+#### 关键特性
+* ACID事务：数据湖通常有多个数据管道并发地读取和写入数据，由于缺乏事务，数据工程师必须通过一个繁琐的过程来确保数据完整性。
+  Delta Lake为数据湖带来了ACID事务，并且提供可序列化这种最高级别的事务隔离级别。
+* 可扩展的元数据处理：在大数据场景下，元数据本身就可能变成“大数据”。
+  Delta Lake把元数据当做数据一样的对待，利用Spark的分布式处理能力来管理所有的元数据。 
+  这样Delta Lake就可以轻松处理拥有数十亿个分区和文件的pb级表。
+* 时间闪回(数据版本)：Delta Lake提供数据快照，使开发人员能够访问并恢复到早期版本的数据，以进行审计、回滚或重现实验。
+* 开发格式：Delta Lake中的所有数据都存储在Apache Parquet格式中，使Delta Lake能够利用Parquet固有的高效压缩和编码方案。
+* 统一批处理和流处理：Delta Lake中的表既是一个批处理表，也是一个流处理源和流接受器（source and sink）。
+  流数据摄取、批量历史回填和交互式查询都是开箱即用的。
+* 强模式(Schema)：Delta Lake提供了制定Schema的能力，并强制校验模式。 以确保数据类型是正确的，并且提供了所需的列，防止脏数据导致数据损坏。
+* 模式演变：大数据是不断变化的。 Delta Lake可以更改可以自动应用的表模式，而无需笨重的DDL。（应用程序写入数据时，指定一个mergeSchema=true的参数）
+* 审计历史：Delta Lake事务日志记录了对数据所做的每一次更改的详细信息，提供了对更改的完整审计跟踪。
+* 更新和删除：Delta Lake支持Scala、Java、Python和SQL api来合并、更新和删除数据集。
+  这使您可以轻松地遵守GDPR(General Data Protection Regulation:通用数据保护条例)等条例，并简化了更改数据采集等用例。
+* 完全兼容Spark API：由于Delta Lake与常用的大数据处理引擎Spark完全兼容，开发人员可以将Delta Lake与现有的数据管道一起使用，只需要做少量的改动。
+* 随处访问：使用你选择的语言，服务，连接器或数据库与Delta Lake建立连接。 包括：Rust，Python，DBT，Hive，Presto等等。
 
 
 ## 参考文档
 * [Spark诞生头十年：Hadoop由盛转衰，统一数据分析大行其道](https://cloud.tencent.com/developer/news/491196)
 * [MLflow](https://github.com/mlflow/mlflow)
 * [Delta Sharing](https://github.com/delta-io/delta-sharing)
+* [Delta Lake](https://github.com/delta-io/delta)
