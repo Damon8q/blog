@@ -69,7 +69,7 @@ Snowflake支持多种方式连接到其服务：
 * 原生连接器(Native connectors)，其可被用于开发应用程序，用来连接到Snowflake
 * 第三方连接可被用于连接应用到Snowflake，如ETL工具(eg. Informatica)和BI工具(eg. ThoughtSpot)
 
-## 目录
+## 其他
 * [初步使用体验及思考](初步使用体验及思考.md)
 * Snowflake论文解析（TODO：http://pages.cs.wisc.edu/~remzi/Classes/739/Spring2004/Papers/p215-dageville-snowflake.pdf）
 
