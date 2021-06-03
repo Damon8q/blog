@@ -60,6 +60,9 @@ Delta Lake是为Spark等大数据引擎提供了可扩展、ACID事务的存储�
 * 完全兼容Spark API：由于Delta Lake与常用的大数据处理引擎Spark完全兼容，开发人员可以将Delta Lake与现有的数据管道一起使用，只需要做少量的改动。
 * 随处访问：使用你选择的语言，服务，连接器或数据库与Delta Lake建立连接。 包括：Rust，Python，DBT，Hive，Presto等等。
 
+## 其他
+* [初步使用体验及思考](初步使用体验及思考.md)
+
 
 ## 参考文档
 * [Spark诞生头十年：Hadoop由盛转衰，统一数据分析大行其道](https://cloud.tencent.com/developer/news/491196)
