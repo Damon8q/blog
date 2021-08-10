@@ -89,7 +89,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 * [Redis探索之路](http://mp.weixin.qq.com/s/hfbTRWaGSZfed4I2Op0O-w)
 
-* [MySQL丢数据及主从数据不一致的场景](https://blog.csdn.net/wukong_666/article/details/54729625)
+* [通俗易懂的学会：SQL窗口函数](https://zhuanlan.zhihu.com/p/92654574)
 
 * [MySQL GTID复制实现详解](http://www.ywnds.com/?p=3898)
 
