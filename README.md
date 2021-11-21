@@ -32,7 +32,7 @@
 
 ### Rust
 
-- [Rust语言基础]()
+- [Rust权威指南学习笔记](./rust-notes/the-rust-programming-language)
 
 
 
