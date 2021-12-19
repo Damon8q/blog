@@ -201,6 +201,7 @@ Readme记录一些有用的只是连接，issues是自己的一些记录。
 
 #### Rust
 * [Rust 程序设计语言](https://kaisery.github.io/trpl-zh-cn/title-page.html)
+* [matklad-高质量rust博文](https://matklad.github.io/)
 
 
 #### 加密
