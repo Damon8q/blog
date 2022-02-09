@@ -33,8 +33,8 @@
 ### Rust
 
 - [Rust权威指南学习笔记](./rust-notes/the-rust-programming-language)
-
-
+- [Rust语言圣经学习笔记](./rust-notes/rust-course)
+- [Rust编程第一课学习笔记](./rust-notes/lesson-one-of-rust)
 
 ### Golang
 
