@@ -249,9 +249,202 @@ fn main() {
 
 
 
+# 字符、布尔、单元类型
+
+## 字符类型（char）
+
+```rust
+fn main() {
+    let c = 'z';
+    let z = 'ℤ';
+    let g = '国';
+    let heart_eyed_cat = '😻';
+    println!("字符'z'占用了{}字节的内存大小",std::mem::size_of_val(&c));	// 4
+    println!("字符'ℤ'占用了{}字节的内存大小",std::mem::size_of_val(&z));	// 4
+    println!("字符'国'占用了{}字节的内存大小",std::mem::size_of_val(&g));	// 4
+    println!("字符'😻'占用了{}字节的内存大小",std::mem::size_of_val(&heart_eyed_cat));	// 4
+}
+```
+
+一个`Unicode`值即是一个字符（char），由于 `Unicode` 都是 4 个字节编码，因此字符类型也是占用 4 个字节。
+
+> 注意：Rust字符只能用`''`来表示，`""`是留给字符串的
 
 
 
+## 布尔（bool）
+
+Rust 中的布尔类型有两个可能的值：`true` 和 `false`, 布尔值占用内存的大小为 `1` 个字节。使用布尔类型的场景主要在于流程控制。
 
 
+
+## 单元类型
+
+单元类型就是`()`，唯一的值也是`()`。
+
+前面多次看到的， `main` 函数就返回这个单元类型 `()`，你不能说 `main` 函数无返回值，因为没有返回值的函数在 Rust 中是有单独的定义的：`发散函数`，顾名思义，无法收敛的函数。
+
+例如常见的 `println!()` 的返回值也是单元类型 `()`。
+
+再比如，你可以用 `()` 作为 `map` 的值，表示我们不关注具体的值，只关注 `key`。 这种用法和 Go 语言的 ***struct{}*** 类似，可以作为一个值用来占位，但是完全**不占用**任何内存。
+
+
+
+# 语句和表达式
+
+Rust 的函数体是由一系列语句组成，最后由一个表达式来返回值，例如：
+
+```rust
+fn add_with_extra(x: i32, y: i32) -> i32 {
+    let x = x + 1; // 语句
+    let y = y + 5; // 语句
+    x + y // 表达式
+}
+```
+
+语句会执行一些操作但是不会返回一个值，而表达式会在求值后返回一个值，因此在上述函数体的三行代码中，前两行是语句，最后一行是表达式。
+
+**这种基于语句和表达式的方式是非常重要的，你需要能明确的区分这两个概念**。基于表达式是函数式语言的重要特征，**表达式总要返回值**。
+
+
+
+## 语句
+
+```rust
+let a = 8;
+let b: Vec<f64> = Vec::new();
+let (a, c) = ("hi", false);
+```
+
+以上都是语句，它们完成了一个具体的操作，但是并没有返回值，因此是语句。
+
+由于 `let` 是语句，因此不能将 `let` 语句赋值给其它值，如下形式是错误的：
+
+```rust
+let b = (let a = 8);
+```
+
+错误如下：
+
+```tex
+error: expected expression, found statement (`let`) // 期望表达式，却发现`let`语句
+ --> src/main.rs:2:13
+  |
+2 |     let b = let a = 8;
+  |             ^^^^^^^^^
+  |
+  = note: variable declaration using `let` is a statement `let`是一条语句
+
+error[E0658]: `let` expressions in this position are experimental
+          // 下面的 `let` 用法目前是试验性的，在稳定版中尚不能使用
+ --> src/main.rs:2:13
+  |
+2 |     let b = let a = 8;
+  |             ^^^^^^^^^
+  |
+  = note: see issue #53667 <https://github.com/rust-lang/rust/issues/53667> for more information
+  = help: you can write `matches!(<expr>, <pattern>)` instead of `let <pattern> = <expr>`
+
+```
+
+以上的错误告诉我们 `let` 是语句，不是表达式，因此它不返回值，也就不能给其它变量赋值。但是该错误还透漏了一个重要的信息， `let` 作为表达式已经是试验功能了，也许不久的将来，我们在[`stable rust`](https://course.rs/appendix/rust-version.html)下可以这样使用。
+
+
+
+## 表达式
+
+表达式会进行求值，然后返回一个值。例如 `5 + 6`，在求值后，返回值 `11`，因此它就是一条表达式。
+
+表达式可以成为语句的一部分，例如`let y = 6`中，6就是一个表达式，用花括号包裹最终返回一个值的语句块也是表达式，总之，能返回值，它就是表达式：
+
+```rust
+fn main() {
+    let y = {
+        let x = 3;
+        x + 1
+    };
+
+    println!("The value of y is: {}", y);
+}
+```
+
+上面使用一个语句块表达式将值赋给 `y` 变量。
+
+该语句块是表达式的原因是：它的最后一行是表达式，返回了 `x + 1` 的值，注意 `x + 1` 不能以分号结尾，否则就会从表达式变成语句， **表达式不能包含分号**。
+
+
+
+# 函数
+
+一个简单但有完备的函数：
+
+```rust
+fn add(i: i32, j: i32) -> i32 {
+   i + j
+ }
+```
+
+函数的构成：
+
+![img](/home/nange/go/src/github.com/nange/blog/rust-notes/rust-course/basic-of-rust/image/function-01.png)
+
+
+
+## 函数要点
+
+* 函数名和变量名使用蛇形命名法（snake case），例如`fn add_two() -> {}`
+* 函数的位置可以随便放，Rust 不关心我们在哪里定义了函数，只要有定义即可
+* 每个函数参数都需要标注类型
+
+
+
+## 函数返回
+
+在 Rust 中函数就是表达式，因此我们可以把函数的返回值直接赋给调用者。
+
+函数的返回值就是函数体最后一条表达式的返回值，当然我们也可以使用 `return` 提前返回，如下：
+
+```rust
+fn plus_or_substract(x:i32) -> i32 {
+    if x > 5 {
+        return x - 5
+    }
+
+    x + 5
+}
+
+fn main() {
+    let x = plus_or_substract(5);
+
+    println!("The value of x is: {}", x);
+}
+```
+
+
+
+### Rust中特殊返回类型
+
+* **无返回值`()`**
+  单元类型 `()`，是一个零长度的元组。它没啥作用，但是可以用来表达一个函数没有返回值（实际上是隐式返回了`()`，等价于显示返回`()`）：
+  - 函数没有返回值，那么返回一个`()`
+  - 通过`;`结尾的表达式返回一个`()`
+
+* **永不返回的函数!**
+  感叹号，当用作函数返回值的时候，表示该函数永不返回，特别的，这种语法往往用做会导致程序崩溃的函数：
+
+  ```rust
+  fn dead_end() -> ! {
+    panic!("你已经到了穷途末路，崩溃吧！");
+  }
+  ```
+
+  下面的函数创建了一个无限循环，该循环永不跳出，因此函数也永不返回：
+
+  ```rust
+  fn forever() -> ! {
+    loop {
+      //...
+    };
+  }
+  ```
 
