@@ -386,7 +386,7 @@ fn add(i: i32, j: i32) -> i32 {
 
 函数的构成：
 
-![img](/home/nange/go/src/github.com/nange/blog/rust-notes/rust-course/basic-of-rust/image/function-01.png)
+![img](./image/function-01.png)
 
 
 
