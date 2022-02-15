@@ -233,17 +233,252 @@ fn takes_and_gives_back(a_string: String) -> String { // a_string 进入作用�
 
 所有权很强大，避免了内存的不安全性，但也带来了一个新的麻烦：**总是把一个值传来传去使用它**。
 
-传入一个函数，很可能还要从函数传出去，结果就是语言表达变得非常啰嗦，幸运的是，Rust提供了新的功能解决这个问题。下一章解决这个问题。
+传入一个函数，很可能还要从函数传出去，结果就是语言表达变得非常啰嗦，幸运的是，Rust提供了新的功能解决这个问题。
 
 
 
+# 引用与借用
+
+Rust 通过`借用（Borrowing）`，这个概念来达到上节所说所有权的问题。**获取变量的引用，称之为借用(borrowing)。**
 
 
 
+## 引用与解引用
+
+常规引用是一个指针类型，指向了对象存储的内存地址。下面代码，创建了一个`i32`的引用`y`，然后使用解引用符解除`y`的值：
+
+```rust
+fn main() {
+    let x = 5;
+    let y = &x;
+
+    assert_eq!(5, x);
+    assert_eq!(5, *y);
+}
+```
 
 
 
+## 不可变引用
+
+下面代码，我们用`s1`的引用作为参数传递给了`calculate_length`函数，而没有转移所有权给该函数：
+
+```rust
+fn main() {
+    let s1 = String::from("hello");
+
+    let len = calculate_length(&s1);
+
+    println!("The length of '{}' is {}.", s1, len);
+}
+
+fn calculate_length(s: &String) -> usize {
+    s.len()
+}
+```
+
+这里，`&` 符号即是引用，它们允许你使用值，但是不获取所有权，如图所示：
+
+![&String s pointing at String s1](./image/v2-fc68ea4a1fe2e3fe4c5bb523a0a8247c_1440w.jpg)
+
+通过 `&s1` 语法，我们创建了一个 **指向s1的引用**，但是并不拥有它。因为并不拥有这个值，当引用离开作用域后，其指向的值也不会被丢弃。
+
+如果我们尝试修改借用的变量：
+
+```rust
+fn main() {
+    let s = String::from("hello");
+
+    change(&s);
+}
+
+fn change(some_string: &String) {
+    some_string.push_str(", world");
+}
+```
+
+则会报错：
+
+```rust
+error[E0596]: cannot borrow `*some_string` as mutable, as it is behind a `&` reference
+ --> src/main.rs:8:5
+  |
+7 | fn change(some_string: &String) {
+  |                        ------- help: consider changing this to be a mutable reference: `&mut String`
+                           ------- 帮助：考虑将该参数类型修改为可变的引用: `&mut String`
+8 |     some_string.push_str(", world");
+  |     ^^^^^^^^^^^ `some_string` is a `&` reference, so the data it refers to cannot be borrowed as mutable
+                     `some_string`是一个`&`类型的引用，因此它指向的数据无法进行修改
+```
+
+正如变量默认不可变一样，引用指向的值默认也是不可变的，下面看如何解决这个问题。
 
 
 
+## 可变引用
+
+```rust
+fn main() {
+    let mut s = String::from("hello");
+
+    change(&mut s);
+}
+
+fn change(some_string: &mut String) {
+    some_string.push_str(", world");
+}
+```
+
+首先，声明 `s` 是可变类型，其次创建一个可变的引用 `&mut s` 和接受可变引用的函数 `some_string: &mut String`。
+
+
+
+### 可变引用同时只能存在一个
+
+限制： **同一作用域，特定数据只能有一个可变引用**：
+
+```rust
+let mut s = String::from("hello");
+
+let r1 = &mut s;
+let r2 = &mut s;
+
+println!("{}, {}", r1, r2);
+```
+
+以上代码会报错：
+
+```rust
+error[E0499]: cannot borrow `s` as mutable more than once at a time
+```
+
+这段代码出错的原因在于，第一个可变借用 `r1` 必须要持续到最后一次使用的位置 `println!`，在 `r1` 创建和最后一次使用之间，我们又尝试创建第二个可变引用 `r2`。
+
+这种限制的好处就是使 Rust 在编译期就避免数据竞争，数据竞争可由以下行为造成：
+
+* 两个或更多指针同时访问同一数据
+* 至少一个指针被用来写入数据
+* 没有同步数据访问机制
+
+Rust 避免了数据竞争情况的发生，因为它甚至不会编译存在数据竞争的代码！
+
+代码做如下修改就能通过编译：
+
+```rust
+fn main() {
+        let mut s = String::from("hello");
+
+        let r1 = &mut s;
+        let r2 = &mut s;
+
+        println!("{}", r2);
+    }
+
+```
+
+也就是说，定义了`r2`后，不能再出现对`r1`的使用。这样就是安全的，就能通过编译。
+
+
+
+### 可变引用与不可变引用不能同时存在
+
+下面的代码会导致错误：
+
+```rust
+let mut s = String::from("hello");
+
+let r1 = &s; // 没问题
+let r2 = &s; // 没问题
+let r3 = &mut s; // 大问题
+
+println!("{}, {}, and {}", r1, r2, r3);
+```
+
+错误如下：
+
+```rust
+error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable
+```
+
+这个也很好理解，正在借用不可变引用的用户，肯定不希望他借用的东西，被另外一个人莫名其妙改变了。多个不可变借用被允许是因为没有人会去试图修改数据，每个人都只读这一份数据而不做修改，因此不用担心数据被污染。
+
+> 注意，引用的作用域 `&s` 从创建开始，一直持续到它最后一次使用的地方，这个跟变量的作用域有所不同，变量的作用域从创建持续到某一个花括号 `}`
+
+改为如下代码即可：
+
+```rust
+fn main() {
+   let mut s = String::from("hello");
+
+    let r1 = &s; 
+    let r2 = &s; 
+    println!("{} and {}", r1, r2);
+
+    let r3 = &mut s; 
+    println!("{}", r3);
+} 
+```
+
+虽然这种借用错误有的时候会让我们很郁闷，但是你只要想想这是 Rust 提前帮你发现了潜在的 BUG，其实就开心了，虽然减慢了开发速度，但是从长期来看，大幅减少了后续开发和运维成本。
+
+
+
+## 悬垂引用（Dangling References）
+
+悬垂引用也叫做悬垂指针，意思为指针指向某个值后，这个值被释放掉了，而指针仍然存在，其指向的内存可能不存在任何值或已被其它变量重新使用。
+
+```rust
+fn main() {
+    let reference_to_nothing = dangle();
+}
+
+fn dangle() -> &String {
+    let s = String::from("hello");
+
+    &s
+}
+```
+
+当我们尝试创建一个悬垂引用，Rust 会抛出一个编译时错误：
+
+```rust
+error[E0106]: missing lifetime specifier
+ --> src/main.rs:5:16
+  |
+5 | fn dangle() -> &String {
+  |                ^ expected named lifetime parameter
+  |
+  = help: this function's return type contains a borrowed value, but there is no value for it to be borrowed from
+help: consider using the `'static` lifetime
+  |
+5 | fn dangle() -> &'static String {
+  |                ~~~~~~~~
+
+```
+
+错误信息引用了一个我们还未介绍的功能：`生命周期（lifetimes）`。不过，即使你不理解生命周期，也可以通过错误信息知道这段代码错误的关键信息：
+
+```rust
+this function's return type contains a borrowed value, but there is no value for it to be borrowed from.
+该函数返回了一个借用的值，但是已经找不到它所借用值的来源
+```
+
+一个很好的解决方法是直接返回`String`:
+
+```rust
+fn no_dangle() -> String {
+    let s = String::from("hello");
+
+    s
+}
+```
+
+这样就没有任何错误了，最终 `String` 的 **所有权被转移给外面的调用者**。
+
+
+
+## 借用规则总结
+
+* 同一时刻，只能拥有要么一个可变引用，要么任意多个不可变引用
+* 引用必须总是有效的
 
