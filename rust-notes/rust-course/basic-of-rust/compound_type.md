@@ -484,23 +484,229 @@ fn calculate_length(s: String) -> (String, usize) {
 
 
 
+# 结构体
+
+上节提到需要更高级的数据结构来更好的抽象问题，结构体`struct`就是这样的复合数据结构，它是由其他数据类型组合而来。
+
+结构体和元组有些相像：都是有多种类型组合而成。但是与元组不同，结构体可以为内部的每个字段起一个富有含义的名称。因此结构体更加灵活强大，其不依赖字段顺序来访问和解析。
 
 
 
+## 结构体语法
+
+* 结构体定义:
+
+  ```rust
+  struct User {
+      active: bool,
+      username: String,
+      email: String,
+      sign_in_count: u64,
+  }
+  ```
+
+  结构体名称是`User`，拥有4个字段，且都有自己的名字及类型声明。
+
+* 创建结构体实例
+
+  ```rust
+  let user1 = User {
+      email: String::from("someone@example.com"),
+      username: String::from("someusername123"),
+      active: true,
+      sign_in_count: 1,
+  };
+  ```
+
+  有几点注意：
+
+  1. 初始化实例时，**每个字段**都需要初始化
+  2. 初始化时的字段顺序**不需要**和结构体定义时的顺序一致
+
+* 访问结构体字段
+
+  ```rust
+  let mut user1 = User {
+      email: String::from("someone@example.com"),
+      username: String::from("someusername123"),
+      active: true,
+      sign_in_count: 1,
+  };
+  
+  user1.email = String::from("anotheremail@example.com");
+  ```
+
+  注意：需要将结构体实例声明为可变的，才能修改其中的字段，Rust不支持将结构体字段标记为可变。
+
+* 简化结构体创建
+
+  ```rust
+  fn build_user(email: String, username: String) -> User {
+      User {
+          email,
+          username,
+          active: true,
+          sign_in_count: 1,
+      }
+  }
+  ```
+
+  如上所示，当函数参数和结构体同名时，可以直接使用缩略的方式进行初始化。
+
+* 结构体更新语法
+  在实际场景中：根据已有的结构体实例，创建新的结构体实例较为常见，例如：
+
+  ```rust
+  let user2 = User {
+      active: user1.active,
+      username: user1.username,
+      email: String::from("another@example.com"),
+      sign_in_count: user1.sign_in_count,
+  };
+  ```
+
+  这样是OK的，但是有些啰嗦，好在Rust为我们提供了更简单的`结构体更新语法`：
+
+  ```rust
+  let user2 = User {
+      email: String::from("another@example.com"),
+      ..user1
+  };
+  ```
+
+  `..` 语法表明凡是我们没有显示声明的字段，全部从 `user1` 中自动获取。需要注意的是 `..user1` 必须在结构体的尾部使用。
+
+  > 结构体更新跟赋值语句`=`非常像，因此`user1`的部分字段所有权被转移到了`user2`中：`username`字段发生了所有权转移，作为结果，`user1`无法再被使用。
+  >
+  > 为什么只有`username`字段发生了转移？回想所有权那一节内容，提到了`Copy`特征：实现了`Copy`特征的类型无需所有权转移，可以直接在赋值时进行数据拷贝，其中`bool`和`u64`类型就实现了`Copy`特征，因此`active`和`sign_in_count`仅仅发生了拷贝，而不是所有权转移。
+  >
+  > 注意：`username`所有权转移给了`user2`，导致`user1`无法使用，但并不代表`user1`内部其他字段不能被继续使用，例如：
+
+```rust
+let user1 = User {
+    email: String::from("someone@example.com"),
+    username: String::from("someusername123"),
+    active: true,
+    sign_in_count: 1,
+};
+let user2 = User {
+    email: String::from("another@example.com"),
+    ..user1
+};
+println!("{}", user1.active);
+// 下面这行会报错
+println!("{:?}", user1);
+```
 
 
 
+## 结构体的内存排列
+
+下面代码：
+
+```rust
+#[derive(Debug)]
+struct File {
+   name: String,
+   data: Vec<u8>,
+}
+ 
+fn main() {
+   let f1 = File {
+     name: String::from("f1.txt"),
+     data: Vec::new(),
+   };
+ 
+   let f1_name = &f1.name;
+   let f1_length = &f1.data.len();
+ 
+   println!("{:?}", f1);
+   println!("{} is {} bytes long", f1_name, f1_length);
+}
+```
+
+上面定义的 `File` 结构体在内存中的排列如下图所示：
+
+![img](./image/v2-8cc4ed8cd06d60f974d06ca2199b8df5_1440w.png)
+
+从图中可以清晰的看出 `File` 结构体两个字段 `name` 和 `data` 分别拥有底层两个 `[u8]` 数组的所有权(`String` 类型的底层也是 `[u8]` 数组)，通过 `ptr` 指针指向底层数组的内存地址，这里你可以把 `ptr` 指针理解为 Rust 中的引用类型。
+
+该图片也侧面印证了：**把结构体中具有所有权的字段转移出去后，将无法再访问该字段，但是可以正常访问其它的字段**。
 
 
 
+## 元组结构体（Tuple Struct）
+
+结构体必须要有名称，但结构体字段可以没有名称，长的像元组，因此被称为元组结构体。实例：
+
+```rust
+struct Color(i32, i32, i32);
+struct Point(i32, i32, i32);
+
+let black = Color(0, 0, 0);
+let origin = Point(0, 0, 0);
+```
+
+在希望有一个整体的名称，又不关心字段名字时非常有用。例如上面的`Point`元组结构体，众所周知3D点是`(x, y, z)`形式坐标点，无需再为内部字段命名。
 
 
 
+## 元结构体(Unit-like Struct)
+
+元结构体是没有任何字段和属性的结构体。
+
+如果定义一个类型，不关心其内容，只关心它的行为，就可以使用`元结构体`：
+
+```rust
+struct AlwaysEqual;
+
+// 我们不关心 AlwaysEqual 的字段数据，只关心它的行为，因此将它声明为元结构体，然后再为它实现某个特征
+impl SomeTrait for AlwaysEqual {
+    
+}
+```
 
 
 
+## 结构体数据的所有权
 
+在之前的`User`中，我们使用了自身拥有所有权的`String`类型，而不是基于引用的`&str`字符串切片类型。
 
+也可以让结构体从其他对象借用数据，不过这样做，就需要引入`生命周期`这个新概念，简而言之，生命周期能确保结构体的作用范围要比它所借用的数据的作用范围要小。
 
+总之，如果你想在结构体中使用一个引用，就必须加上生命周期，否则就会报错：
 
+```rust
+struct User {
+    username: &str,
+    email: &str,
+    sign_in_count: u64,
+    active: bool,
+}
+
+fn main() {
+    let user1 = User {
+        email: "someone@example.com",
+        username: "someusername123",
+        active: true,
+        sign_in_count: 1,
+    };
+}
+```
+
+```rust
+error[E0106]: missing lifetime specifier
+ --> src/main.rs:2:15
+  |
+2 |     username: &str,
+  |               ^ expected named lifetime parameter // 需要一个生命周期
+  |
+help: consider introducing a named lifetime parameter // 考虑像下面的代码这样引入一个生命周期
+  |
+1 ~ struct User<'a> {
+2 ~     username: &'a str,
+  |
+```
+
+在后续的`生命周期`中会再来学习如何修复这个问题。
 
