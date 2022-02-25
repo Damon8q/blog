@@ -14,6 +14,7 @@ Rust语言圣经是一本开源书籍，涵盖从入门到精通所需的全部 
 * [基本类型](./basic-of-rust/primitive_type.md)
 * [所有权和借用](./basic-of-rust/ownership-borrowing.md)
 * [复合类型](./basic-of-rust/compound_type.md)
+* [流程控制](./basic-of-rust/flow-control.md)
 
 ## 3. Rust高级进阶
 
