@@ -710,3 +710,401 @@ help: consider introducing a named lifetime parameter // 考虑像下面的代�
 
 在后续的`生命周期`中会再来学习如何修复这个问题。
 
+
+
+# 枚举
+
+枚举(enum 或 enumeration)允许你通过列举可能的成员来定义一个**枚举类型**，例如扑克牌花色：
+
+```rust
+enum PokerSuit {
+  Clubs,
+  Spades,
+  Diamonds,
+  Hearts,
+}
+```
+
+任何一张扑克，它的花色肯定会落在四种花色中，而且也只会落在其中一个花色上，这种特性非常适合枚举的使用，因为**枚举值**只可能是其中某一个成员。
+
+ **枚举类型是一个类型，它会包含所有可能的枚举成员, 而枚举值是该类型中的具体某个成员的实例。**
+
+## 枚举值
+
+```rust
+fn main() {
+    let heart = PokerSuit::Hearts;
+    let diamond = PokerSuit::Diamonds;
+
+    print_suit(heart);
+    print_suit(diamond);
+}
+
+fn print_suit(card: PokerSuit) {
+    println!("{:?}",card);
+}
+```
+
+`print_suit` 函数的参数类型是 `PokerSuit`，因此我们可以把 `heart` 和 `diamond` 传给它，虽然 `heart` 是基于 `PokerSuit` 下的 `Hearts` 成员实例化的，但是它是货真价实的 `PokerSuit` 枚举类型。
+
+接下来，我们想让扑克牌变得更加实用，那么需要给每张牌赋予一个值：`A`(1)-`K`(13)，这样再加上花色，就是一张真实的扑克牌了，例如红心A。
+
+目前的枚举不能带有值，如果使用结构体，可以如下实现：
+
+```rust
+enum PokerSuit {
+    Clubs,
+    Spades,
+    Diamonds,
+    Hearts,
+}
+
+struct PokerCard {
+    suit: PokerSuit,
+    value: u8
+}
+```
+
+这样实现是OK的，但是还有更简洁的实现：
+
+```rust
+enum PokerCard {
+    Clubs(u8),
+    Spades(u8),
+    Diamonds(u8),
+    Hearts(u8),
+}
+
+fn main() {
+   let c1 = PokerCard::Spades(5);
+   let c2 = PokerCard::Diamonds(13);
+}
+```
+
+直接将数据信息关联到枚举成员上，省去近一半的代码，更加优雅。
+
+不仅如此，同一个枚举类型下的不同成员还能持有不同的数据类型，例如让某些花色打印 `1-13` 的字样，另外的花色打印上 `A-K` 的字样：
+
+```rust
+enum PokerCard {
+    Clubs(u8),
+    Spades(u8),
+    Diamonds(char),
+    Hearts(char),
+}
+
+fn main() {
+   let c1 = PokerCard::Spades(5);
+   let c2 = PokerCard::Diamonds('A');
+}
+```
+
+实现这样的需求，如果继续用结构体实现，将会变得更加复杂。
+
+再来看一个来自标准库中的例子：
+
+```rust
+struct Ipv4Addr {
+    // --snip--
+}
+
+struct Ipv6Addr {
+    // --snip--
+}
+
+enum IpAddr {
+    V4(Ipv4Addr),
+    V6(Ipv6Addr),
+}
+```
+
+这个例子跟我们之前的扑克牌很像，只不过枚举成员包含的类型更复杂了，变成了结构体：分别通过 `Ipv4Addr` 和 `Ipv6Addr` 来定义两种不同的IP数据。
+
+从这些例子可以看出，**任何类型的数据都可以放入枚举成员中**: 例如字符串、数值、结构体甚至另一个枚举。
+
+一个更加复杂的示例：
+
+```rust
+enum Message {
+    Quit,
+    Move {x: i32, y: i32},
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+fn main() {
+    let m1 = Message::Quit;
+    let m2 = Message::Move{x:1, y:1};
+    let m3 = Message::ChangeColor(255, 255, 0);
+}
+```
+
+该枚举类型代表一条消息，它包含四个不同成员：
+
+* `Quit`: 没有任何关联数据
+* `Move`: 包含一个匿名结构体
+* `Write`: 包含一个`String` 字符串
+* `ChangeColor`: 包含3个`i32`
+
+当然也可以用结构体的方式定义这些消息，就像下面这样：
+
+```rust
+struct QuitMessage; // 元结构体
+struct MoveMessage {
+    x: i32,
+    y: i32,
+}
+struct WriteMessage(String); // 元组结构体
+struct ChangeColorMessage(i32, i32, i32); // 元组结构体
+```
+
+但是由于每个结构体都有自己的类型，因此我们无法在需要同一类型的地方进行使用，例如某个函数它的功能是接受消息并进行发送，那么用枚举的方式，就可以接收不同的消息，但是用结构体，该函数无法接受 4 个不同的结构体作为参数。
+
+而且从代码规范角度来看，枚举的实现更简洁，代码内聚性更强，不像结构体的实现，分散在各个地方。
+
+
+
+## 同一化类型
+
+TODO：有部分疑问，已经在GitHub上提交讨论：https://github.com/sunface/rust-course/discussions/466
+
+
+
+## Option枚举用于处理空值
+
+在其它编程语言中，往往都有一个 `null` 关键字，对`null`进行操作通常就会抛出`null异常`导致程序崩溃，因此需要特别小心。
+
+尽管如此，空值的表达依然非常有意义，因为空值表示当前时刻变量的值是缺失的。有鉴于此，Rust 吸取了众多教训，决定抛弃 `null`，而改为使用 `Option` 枚举变量来表述这种结果。
+
+`Option` 枚举包含两个成员，一个成员表示含有值：`Some(T)`, 另一个表示没有值：`None`，定义如下：
+
+```rust
+enum Option<T> {
+    Some(T),
+    None,
+}
+```
+
+其中 `T` 是泛型参数，`Some(T)`表示该枚举成员的数据类型是 `T`，换句话说，`Some` 可以包含任何类型的数据。
+
+`Option<T>` 枚举是如此有用以至于它被包含在了 [`prelude`](https://course.rs/appendix/prelude.html)（prelude 属于 Rust 标准库，Rust 会将最常用的类型、函数等提前引入其中，省得我们再手动引入）之中，你不需要将其显式引入作用域。另外，它的成员 `Some` 和 `None` 也是如此，无需使用 `Option::` 前缀就可直接使用 `Some` 和 `None`。
+
+看如下代码：
+
+```rust
+let some_number = Some(5);
+let some_string = Some("a string");
+
+let absent_number: Option<i32> = None;
+```
+
+如果使用 `None` 而不是 `Some`，需要告诉 Rust `Option<T>` 是什么类型的，因为编译器只通过 `None` 值无法推断出 `Some` 成员保存的值的类型。
+
+那么，`Option<T>` 为什么就比空值要好呢？看如下代码：
+
+```rust
+let x: i8 = 5;
+let y: Option<i8> = Some(5);
+
+let sum = x + y;
+```
+
+如果运行这些代码，将得到类似这样的错误信息：
+
+```rust
+error[E0277]: the trait bound `i8: std::ops::Add<std::option::Option<i8>>` is
+not satisfied
+ -->
+  |
+5 |     let sum = x + y;
+  |                 ^ no implementation for `i8 + std::option::Option<i8>`
+  |
+```
+
+很好！事实上，错误信息意味着 Rust 不知道该如何将 `Option<i8>` 与 `i8` 相加，因为它们的类型不同。当在 Rust 中拥有一个像 `i8` 这样类型的值时，编译器确保它总是有一个有效的值，我们可以放心使用而无需做空值检查。只有当使用 `Option<i8>`（或者任何用到的类型）的时候才需要担心可能没有值，而编译器会确保我们在使用值之前处理了为空的情况。
+
+换句话说，在对 `Option<T>` 进行 `T` 的运算之前必须将其转换为 `T`。通常这能帮助我们捕获到空值最常见的问题之一：期望某值不为空但实际上为空的情况。
+
+那么当有一个 `Option<T>` 的值时，如何从 `Some` 成员中取出 `T` 的值来使用它呢？`Option<T>` 枚举拥有大量用于各种情况的方法：可以查看[它的文档](https://doc.rust-lang.org/std/option/enum.Option.html)。熟悉 `Option<T>` 的方法将对你的 Rust 之旅非常有用。
+
+
+
+`match` 表达式可以用于处理枚举的控制流结构：它会根据枚举的成员运行不同的代码，这些代码可以使用匹配到的值中的数据。就像下面这样：
+
+```rust
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => None,
+        Some(i) => Some(i + 1),
+    }
+}
+
+let five = Some(5);
+let six = plus_one(five);
+let none = plus_one(None);
+```
+
+这就是`match`使用的大致模样，在模式匹配章节再做详细说明。
+
+
+
+# 数组
+
+数组是日常开发使用最广泛的数据结构之一。在Rust中，数组有两种：一种是速度快但长度固定的`array`，另一种是可动态增长但有性能损耗的`Vector`。
+
+这两个数组的关系跟 `&str` 与 `String` 的关系很像，前者是长度固定的字符串切片，后者是可动态增长的字符串。其实，在 Rust 中无论是 `String` 还是 `Vector`，它们都是 Rust 的高级类型：集合类型，在后面章节会有详细介绍。
+
+数组的三要素：
+
+* 长度固定
+* 元素类型相同
+* 依次线性排列
+
+## 创建数组
+
+```rust
+fn main() {
+    let a = [1, 2, 3, 4, 5];
+}
+```
+
+因为数组元素类型大小固定，长度也固定，因此**数组 `array` 是存储在栈上**，性能也会非常优秀。与此对应，**动态数组 `Vector` 是存储在堆上**，因此长度可以动态改变。
+
+在一些时候，还需要为**数组声明类型**，如下所示：
+
+```rust
+let a: [i32; 5] = [1, 2, 3, 4, 5];
+```
+
+还可以使用下面的语法初始化一个**某个值重复出现N次的数组**：
+
+```rust
+let a = [3; 5];
+```
+
+`a` 数组包含 `5` 个元素，这些元素的初始化值为 `3`，这种语法跟数组类型的声明语法其实是保持一致的：`[3;5]` 和 `[类型;长度]`。
+
+
+
+## 访问数组元素
+
+因为数组是连续存放元素的，因此可以通过索引的方式来访问存放其中的元素：
+
+```rust
+fn main() {
+    let a = [9, 8, 7, 6, 5];
+    
+    let first = a[0]; // 获取a数组第一个元素
+    let second = a[1]; // 获取第二个元素
+}
+```
+
+
+
+## 越界访问
+
+下面是一个接收用户的控制台输入，然后将其作为索引访问数组元素的例子：
+
+```rust
+use std::io;
+
+fn main() {
+    let a = [1, 2, 3, 4, 5];
+
+    println!("Please enter an array index.");
+
+    let mut index = String::new();
+    // 读取控制台的输出
+    io::stdin()
+        .read_line(&mut index)
+        .expect("Failed to read line");
+
+    let index: usize = index
+        .trim()
+        .parse()
+        .expect("Index entered was not a number");
+
+    let element = a[index];
+
+    println!(
+        "The value of the element at index {} is: {}",
+        index, element
+    );
+}
+```
+
+使用 `cargo run` 来运行代码，因为数组只有 5 个元素，如果我们试图输入 `5` 去访问第 6 个元素，则会访问到不存在的数组元素，最终程序会崩溃退出：
+
+```rust
+Please enter an array index.
+5
+thread 'main' panicked at 'index out of bounds: the len is 5 but the index is 5', src/main.rs:19:19
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+```
+
+当尝试使用索引访问元素时，Rust 将检查你指定的索引是否小于数组长度。如果索引大于或等于数组长度，Rust会出现 ***panic***。这种检查只能在运行时进行，比如在上面这种情况下，编译器无法在编译期知道用户运行代码时将输入什么值。
+
+这种就是 Rust 的安全特性之一。在很多系统编程语言中，并不会检查数组越界问题，你会访问到无效的内存地址获取到一个风马牛不相及的值，最终导致在程序逻辑上出现大问题，而且这种问题会非常难以检查。
+
+
+
+## 数组切片
+
+前面的章节，有讲到`切片`这个概念，它允许你引用集合中的部分连续片段，而不是整个集合，对于数组也是，数组切片允许我们引用数组的一部分：
+
+```rust
+let a: [i32; 5] = [1, 2, 3, 4, 5];
+
+let slice: &[i32] = &a[1..3];
+
+assert_eq!(slice, &[2, 3]);
+```
+
+上面的数组切片`slice`的类型是`&[i32]`，与之对比，数组的类型是`[i32; 5]`，切片的特点：
+
+* 切片的长度可以与数组不同，并不是固定的，而是取决于指定的起始和结束位置
+* 创建切片的代价非常小，因为切片知识针对底层数组的一个引用
+* 切片类型`[T]`拥有不固定的大小，而切片引用类型`&[T]`则具有固定的大小，因为Rust很多时候都需要固定大小数据类型，因此`&[T]`更有用，`&str`字符串切片也同理
+
+
+
+## 总结
+
+一个综合性使用数组的例子：
+
+```rust
+fn main() {
+  // 编译器自动推导出one的类型
+  let one             = [1, 2, 3];
+  // 显式类型标注
+  let two: [u8; 3]    = [1, 2, 3];
+  let blank1          = [0; 3];
+  let blank2: [u8; 3] = [0; 3];
+    
+  // arrays是一个二维数组，其中每一个元素都是一个数组，元素类型是[u8; 3]
+  let arrays: [[u8; 3]; 4]  = [one, two, blank1, blank2];
+  
+  // 借用arrays的元素用作循环中
+  for a in &arrays {
+    print!("{:?}: ", a);
+    // 将a变成一个迭代器，用于循环
+    // 你也可以直接用for n in a {}来进行循环
+    for n in a.iter() {
+      print!("\t{} + 10 = {}", n, n+10);
+    }
+ 
+    let mut sum = 0;
+    // 0..a.len,是一个 Rust 的语法糖，其实就等于一个数组，元素是从0,1,2一直增加到到a.len-1
+    for i in 0..a.len() {
+      sum += a[i];
+    }
+    println!("\t({:?} = {})", a, sum);
+  }
+}
+```
+
+数组虽然简单，但是还是存在几个注意点：
+
+* 数组类型容易跟数组切片混淆。`[T;N]`描述了一个数组类型，而[T]描述了切片类型，因为切片是运行期的数据结构，它的长度无法在编译期得知，因此不能使用`[T;N]`的形式去描述切片
+* `[u8; 3]`和`[u8; 4]`是不同的类型，数组的长度也是类型的一部分
+* **在实际开发中，使用最多的是数组切片[T]**，我们往往通过引用的方式去使用`&[T]`，因为后者有固定的类型大小
