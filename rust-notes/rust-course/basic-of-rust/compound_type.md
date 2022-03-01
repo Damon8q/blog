@@ -34,8 +34,6 @@ error: aborting due to previous error
 
 编译器提示 `greet` 函数需要一个 `String` 类型的字符串，却传入了一个 `&str` 类型的字符串。可见在Rust中，字符串的表示方式有很多种。
 
-
-
 ## 切片（slice）
 
 切片不是Rust独有的概念，在Go语言中也有切片，它允许你引用集合中部分连续的元素序列，而不必引用整个集合。
@@ -54,8 +52,6 @@ let world = &s[6..11];
 对于 `let world = &s[6..11];` 来说，`world` 是一个切片，该切片的指针指向 `s` 的第 7 个字节(索引从 0 开始, 6 是第 7 个字节)，且该切片的长度是 `5` 个字节。内存布局如下图：
 
 ![img](./image/v2-69da917741b2c610732d8526a9cc86f5_1440w.jpg)
-
-
 
 在使用 Rust 的 `..` `range序列`语法时，如果你想从索引 0 开始，可以使用如下的方式，这两个是等效的：
 
@@ -89,16 +85,14 @@ let slice = &s[..];
 ```
 
 > 在对字符串使用切片语法时需要格外小心，切片的索引必须落在字符之间的边界位置，也就是UTF8字符的边界，例如中文在UTF8中占用三个字节,下面的代码就会崩溃:
->
+> 
 > ```rust
 >  let s = "中国人";
 >  let a = &s[0..2];
 >  println!("{}",a);
 > ```
->
+> 
 > 如果改成 `&s[0..3]`，则可以正常通过编译。 因此，当你需要对字符串做切片索引操作时，需要格外小心这一点。
-
-
 
 ### 其他切片
 
@@ -113,8 +107,6 @@ assert_eq!(slice, &[2, 3]);
 ```
 
 该数组切片的类型是 `&[i32]`，数组切片和字符串切片的工作方式是一样的，例如持有一个引用指向原始数组的某个元素和长度。
-
-
 
 ## 字符串字面量是切片
 
@@ -132,8 +124,6 @@ let s: &str = "Hello, world!";
 
 该切片指向了程序可执行文件中的某个点，这也是为什么字符串字面量是不可变的，因为 `&str` 是一个不可变引用。
 
-
-
 ## 什么是字符串？
 
 字符串是由字符组成的连续集合，但**Rust中字符是Unicode类型，因此每个字符占4个字节内存空间，但字符串不一样，字符串是UTF8编码，也就是字符所占字节数是变化的（1-4）**，这样有助于大幅降低字符串所占用的内存空间。
@@ -143,8 +133,6 @@ Rust 在语言级别，只有一种字符串类型： `str`，它通常是以引
 `str` 类型是硬编码进可执行文件，也无法被修改，但是 `String` 则是一个可增长、可改变且具有所有权的 UTF8 编码字符串，**当 Rust 用户提到字符串时，往往指的就是 `String` 类型和 `&str` 字符串切片类型，这两个类型都是 UTF8 编码**。
 
 除了 `String` 类型的字符串，Rust 的标准库还提供了其他类型的字符串，例如 `OsString`， `OsStr`， `CsString` 和` CsStr` 等，这些名字都以 `String` 或者 `Str` 结尾，它们分别对应的是具有所有权和被借用的变量。
-
-
 
 ### 操作字符串
 
@@ -205,8 +193,6 @@ let s = s1 + "-" + &s2 + "-" + &s3;
 
 `String + &str`返回一个 `String`，然后再继续跟一个 `&str` 进行 `+` 操作，返回一个 `String` 类型，不断循环，最终生成一个 `s`，也是 `String` 类型。
 
-
-
 ### String与&str的转换
 
 从`&str`类型生成`String`类型操作：
@@ -230,8 +216,6 @@ fn say_hello(s: &str) {
 ```
 
 实际上这种灵活用法是因为 `deref` 隐式强制转换，具体我们会在 **Deref特征**进行详细讲解。
-
-
 
 ## 字符串索引
 
@@ -260,8 +244,6 @@ let hello = String::from("中国人");
 ```
 
 如果问你该字符串多长，你可能会说 `3`，但是实际上是 `9` 个字节的长度，因为每个汉字在 UTF8 中的长度是 `3` 个字节，因此这种情况下对 `hello` 进行索引，访问 `&hello[0]` 没有任何意义，因为你取不到 `中` 这个字符，而是取到了这个字符三个字节中的第一个字节，这是一个非常奇怪而且难以理解的返回值。
-
-
 
 #### 字符串的不同表现形式
 
@@ -292,8 +274,6 @@ let hello = String::from("中国人");
 
 还有一个原因导致了 Rust 不允许去索引字符：因为索引操作，我们总是期望它的性能表现是 O(1)，然而对于 `String` 类型来说，无法保证这一点，因为 Rust 可能需要从 0 开始去遍历字符串来定位合法的字符。
 
-
-
 ## 字符串切片
 
 因为切片的索引是通过字节来进行，但是字符串又是 UTF8 编码，因此你无法保证索引的字节刚好落在字符的边界上，例如：
@@ -315,8 +295,6 @@ note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 因此在通过索引区间来访问字符串时，**需要格外的小心**，一不注意，就会导致你程序的崩溃！
 
-
-
 ## 操作UTF8字符串
 
 ### 字符
@@ -336,8 +314,6 @@ for c in "中国人".chars() {
 国
 人
 ```
-
-
 
 ### 字节
 
@@ -363,15 +339,11 @@ for b in "中国人".bytes() {
 186
 ```
 
-
-
 ### 获取字串
 
 想要准确的从UTF8字符串中获取子串是较为复杂的事情，例如想要从 `holla中国人नमस्ते` 这种变长的字符串中取出某一个子串，使用标准库是做不到的。需要在 `crates.io` 上搜索 `utf8` 来寻找想要的功能。
 
 可以考虑尝试下这个库:[utf8_slice](https://crates.io/crates/utf8_slice)。
-
-
 
 ## 字符串深度剖析
 
@@ -403,29 +375,23 @@ for b in "中国人".bytes() {
 
 > 其实，在 C++ 中，也有这种概念: *Resource Acquisition Is Initialization (RAII)*。
 
-
-
 这个模式对编写 Rust 代码的方式有着深远的影响， 后续进行更深入的学习。
-
-
 
 # 元组
 
 * 元组是由多种类型组合而成，因此是复合类型，其长度固定，元素顺序也固定。
 
 * 创建一个元组：
-
+  
   ```rust
   fn main() {
       let tup: (i32, f64, u8) = (500, 6.4, 1);
   }
   ```
-
+  
   元组使用括号将多个类型组合到一起。
 
 * 可以用模式匹配或者`.`操作符来获取元组中的值
-
-
 
 ## 用模式匹配解构元组
 
@@ -438,8 +404,6 @@ fn main() {
 ```
 
 元组中对应的值会绑定到变量 `x`， `y`， `z`上。这就是解构：用同样的形式把一个复杂对象中的值匹配出来。
-
-
 
 ## 用`.`来访问元组
 
@@ -457,8 +421,6 @@ fn main() {
 
 和其它语言的数组、字符串一样，元组的索引从 0 开始。
 
-
-
 ## 元组的使用示例
 
 元组在函数返回值场景很常见，可以使用元组返回多个值：
@@ -466,14 +428,14 @@ fn main() {
 ```rust
 fn main() {
     let s1 = String::from("hello");
-    
+
     let (s2, len) = calculate_length(s1);
     println!("The length of '{}' is {}.", s2, len);
 }
 
 fn calculate_length(s: String) -> (String, usize) {
     let length = s.len();
-    
+
     (s, length)
 }
 ```
@@ -482,20 +444,16 @@ fn calculate_length(s: String) -> (String, usize) {
 
 **不具备任何清晰的含义**，在下一章节中，会提到一种与元组类似的结构体， `元组结构体`，可以解决这个问题。
 
-
-
 # 结构体
 
 上节提到需要更高级的数据结构来更好的抽象问题，结构体`struct`就是这样的复合数据结构，它是由其他数据类型组合而来。
 
 结构体和元组有些相像：都是有多种类型组合而成。但是与元组不同，结构体可以为内部的每个字段起一个富有含义的名称。因此结构体更加灵活强大，其不依赖字段顺序来访问和解析。
 
-
-
 ## 结构体语法
 
 * 结构体定义:
-
+  
   ```rust
   struct User {
       active: bool,
@@ -504,11 +462,11 @@ fn calculate_length(s: String) -> (String, usize) {
       sign_in_count: u64,
   }
   ```
-
+  
   结构体名称是`User`，拥有4个字段，且都有自己的名字及类型声明。
 
 * 创建结构体实例
-
+  
   ```rust
   let user1 = User {
       email: String::from("someone@example.com"),
@@ -517,14 +475,14 @@ fn calculate_length(s: String) -> (String, usize) {
       sign_in_count: 1,
   };
   ```
-
+  
   有几点注意：
-
+  
   1. 初始化实例时，**每个字段**都需要初始化
   2. 初始化时的字段顺序**不需要**和结构体定义时的顺序一致
 
 * 访问结构体字段
-
+  
   ```rust
   let mut user1 = User {
       email: String::from("someone@example.com"),
@@ -535,11 +493,11 @@ fn calculate_length(s: String) -> (String, usize) {
   
   user1.email = String::from("anotheremail@example.com");
   ```
-
+  
   注意：需要将结构体实例声明为可变的，才能修改其中的字段，Rust不支持将结构体字段标记为可变。
 
 * 简化结构体创建
-
+  
   ```rust
   fn build_user(email: String, username: String) -> User {
       User {
@@ -550,12 +508,12 @@ fn calculate_length(s: String) -> (String, usize) {
       }
   }
   ```
-
+  
   如上所示，当函数参数和结构体同名时，可以直接使用缩略的方式进行初始化。
 
 * 结构体更新语法
   在实际场景中：根据已有的结构体实例，创建新的结构体实例较为常见，例如：
-
+  
   ```rust
   let user2 = User {
       active: user1.active,
@@ -564,22 +522,22 @@ fn calculate_length(s: String) -> (String, usize) {
       sign_in_count: user1.sign_in_count,
   };
   ```
-
+  
   这样是OK的，但是有些啰嗦，好在Rust为我们提供了更简单的`结构体更新语法`：
-
+  
   ```rust
   let user2 = User {
       email: String::from("another@example.com"),
       ..user1
   };
   ```
-
+  
   `..` 语法表明凡是我们没有显示声明的字段，全部从 `user1` 中自动获取。需要注意的是 `..user1` 必须在结构体的尾部使用。
-
+  
   > 结构体更新跟赋值语句`=`非常像，因此`user1`的部分字段所有权被转移到了`user2`中：`username`字段发生了所有权转移，作为结果，`user1`无法再被使用。
-  >
+  > 
   > 为什么只有`username`字段发生了转移？回想所有权那一节内容，提到了`Copy`特征：实现了`Copy`特征的类型无需所有权转移，可以直接在赋值时进行数据拷贝，其中`bool`和`u64`类型就实现了`Copy`特征，因此`active`和`sign_in_count`仅仅发生了拷贝，而不是所有权转移。
-  >
+  > 
   > 注意：`username`所有权转移给了`user2`，导致`user1`无法使用，但并不代表`user1`内部其他字段不能被继续使用，例如：
 
 ```rust
@@ -598,8 +556,6 @@ println!("{}", user1.active);
 println!("{:?}", user1);
 ```
 
-
-
 ## 结构体的内存排列
 
 下面代码：
@@ -610,16 +566,16 @@ struct File {
    name: String,
    data: Vec<u8>,
 }
- 
+
 fn main() {
    let f1 = File {
      name: String::from("f1.txt"),
      data: Vec::new(),
    };
- 
+
    let f1_name = &f1.name;
    let f1_length = &f1.data.len();
- 
+
    println!("{:?}", f1);
    println!("{} is {} bytes long", f1_name, f1_length);
 }
@@ -632,8 +588,6 @@ fn main() {
 从图中可以清晰的看出 `File` 结构体两个字段 `name` 和 `data` 分别拥有底层两个 `[u8]` 数组的所有权(`String` 类型的底层也是 `[u8]` 数组)，通过 `ptr` 指针指向底层数组的内存地址，这里你可以把 `ptr` 指针理解为 Rust 中的引用类型。
 
 该图片也侧面印证了：**把结构体中具有所有权的字段转移出去后，将无法再访问该字段，但是可以正常访问其它的字段**。
-
-
 
 ## 元组结构体（Tuple Struct）
 
@@ -649,8 +603,6 @@ let origin = Point(0, 0, 0);
 
 在希望有一个整体的名称，又不关心字段名字时非常有用。例如上面的`Point`元组结构体，众所周知3D点是`(x, y, z)`形式坐标点，无需再为内部字段命名。
 
-
-
 ## 元结构体(Unit-like Struct)
 
 元结构体是没有任何字段和属性的结构体。
@@ -662,11 +614,9 @@ struct AlwaysEqual;
 
 // 我们不关心 AlwaysEqual 的字段数据，只关心它的行为，因此将它声明为元结构体，然后再为它实现某个特征
 impl SomeTrait for AlwaysEqual {
-    
+
 }
 ```
-
-
 
 ## 结构体数据的所有权
 
@@ -709,8 +659,6 @@ help: consider introducing a named lifetime parameter // 考虑像下面的代�
 ```
 
 在后续的`生命周期`中会再来学习如何修复这个问题。
-
-
 
 # 枚举
 
@@ -862,13 +810,9 @@ struct ChangeColorMessage(i32, i32, i32); // 元组结构体
 
 而且从代码规范角度来看，枚举的实现更简洁，代码内聚性更强，不像结构体的实现，分散在各个地方。
 
-
-
 ## 同一化类型
 
 TODO：有部分疑问，已经在GitHub上提交讨论：https://github.com/sunface/rust-course/discussions/466
-
-
 
 ## Option枚举用于处理空值
 
@@ -927,8 +871,6 @@ not satisfied
 
 那么当有一个 `Option<T>` 的值时，如何从 `Some` 成员中取出 `T` 的值来使用它呢？`Option<T>` 枚举拥有大量用于各种情况的方法：可以查看[它的文档](https://doc.rust-lang.org/std/option/enum.Option.html)。熟悉 `Option<T>` 的方法将对你的 Rust 之旅非常有用。
 
-
-
 `match` 表达式可以用于处理枚举的控制流结构：它会根据枚举的成员运行不同的代码，这些代码可以使用匹配到的值中的数据。就像下面这样：
 
 ```rust
@@ -945,8 +887,6 @@ let none = plus_one(None);
 ```
 
 这就是`match`使用的大致模样，在模式匹配章节再做详细说明。
-
-
 
 # 数组
 
@@ -984,8 +924,6 @@ let a = [3; 5];
 
 `a` 数组包含 `5` 个元素，这些元素的初始化值为 `3`，这种语法跟数组类型的声明语法其实是保持一致的：`[3;5]` 和 `[类型;长度]`。
 
-
-
 ## 访问数组元素
 
 因为数组是连续存放元素的，因此可以通过索引的方式来访问存放其中的元素：
@@ -993,13 +931,11 @@ let a = [3; 5];
 ```rust
 fn main() {
     let a = [9, 8, 7, 6, 5];
-    
+
     let first = a[0]; // 获取a数组第一个元素
     let second = a[1]; // 获取第二个元素
 }
 ```
-
-
 
 ## 越界访问
 
@@ -1046,8 +982,6 @@ note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 这种就是 Rust 的安全特性之一。在很多系统编程语言中，并不会检查数组越界问题，你会访问到无效的内存地址获取到一个风马牛不相及的值，最终导致在程序逻辑上出现大问题，而且这种问题会非常难以检查。
 
-
-
 ## 数组切片
 
 前面的章节，有讲到`切片`这个概念，它允许你引用集合中的部分连续片段，而不是整个集合，对于数组也是，数组切片允许我们引用数组的一部分：
@@ -1066,8 +1000,6 @@ assert_eq!(slice, &[2, 3]);
 * 创建切片的代价非常小，因为切片知识针对底层数组的一个引用
 * 切片类型`[T]`拥有不固定的大小，而切片引用类型`&[T]`则具有固定的大小，因为Rust很多时候都需要固定大小数据类型，因此`&[T]`更有用，`&str`字符串切片也同理
 
-
-
 ## 总结
 
 一个综合性使用数组的例子：
@@ -1080,10 +1012,10 @@ fn main() {
   let two: [u8; 3]    = [1, 2, 3];
   let blank1          = [0; 3];
   let blank2: [u8; 3] = [0; 3];
-    
+
   // arrays是一个二维数组，其中每一个元素都是一个数组，元素类型是[u8; 3]
   let arrays: [[u8; 3]; 4]  = [one, two, blank1, blank2];
-  
+
   // 借用arrays的元素用作循环中
   for a in &arrays {
     print!("{:?}: ", a);
@@ -1092,7 +1024,7 @@ fn main() {
     for n in a.iter() {
       print!("\t{} + 10 = {}", n, n+10);
     }
- 
+
     let mut sum = 0;
     // 0..a.len,是一个 Rust 的语法糖，其实就等于一个数组，元素是从0,1,2一直增加到到a.len-1
     for i in 0..a.len() {
