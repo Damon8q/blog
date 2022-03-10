@@ -16,6 +16,7 @@ Rust语言圣经是一本开源书籍，涵盖从入门到精通所需的全部 
 * [复合类型](./basic-of-rust/compound_type.md)
 * [流程控制](./basic-of-rust/flow-control.md)
 * [模式匹配](./basic-of-rust/match-pattern.md)
+* [方法 Method](./basic-of-rust/method.md)
 
 ## 3. Rust高级进阶
 
