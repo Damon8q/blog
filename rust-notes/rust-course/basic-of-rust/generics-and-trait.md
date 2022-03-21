@@ -427,13 +427,9 @@ fn main() {
 }
 ```
 
-
-
 # 特征 Trait
 
 特征定义了可以被共享的行为，只要实现了特征，就能使用该行为。
-
-
 
 ## 定义特征
 
@@ -446,8 +442,6 @@ pub trait Summary {
 这里使用 `trait` 关键字来声明一个特征，`Summary` 是特征名。在大括号中定义了该特征的所有方法，在这个例子中是： `fn summarize(&self) -> String`。
 
 特征只定义行为看起来是什么样，而不定义行为具体行为。因此，通常只定义特征方法的签名，而不进行实现，此时方法签名结尾是 `;`，而不是一个 `{}`。
-
-
 
 ## 为类型实现特征
 
@@ -529,8 +523,6 @@ pub trait Summary {
 
 为了使用 `Summary`，只需要实现 `summarize_author` 方法即可。
 
-
-
 ## 使用特征作为函数参数
 
 定义一个函数，使用特征用做函数参数：
@@ -545,8 +537,6 @@ pub fn notify(item: &impl Summary) {
 
 可以使用任何实现了 `Summary` 特征的类型作为该函数的参数，同时在函数体内，还可以调用该特征的方法，例如 `summarize` 方法。
 
-
-
 ## 特征约束(trait bound)
 
 虽然 `impl Trait` 这种语法非常好理解，但是实际上它只是一个语法糖：
@@ -558,8 +548,6 @@ pub fn notify<T: Summary>(item: &T) {
 ```
 
 真正的完整书写形式如上所述，形如 `T: Summary` 被称为**特征约束**。
-
-
 
 在简单的场景下 `impl Trait` 的语法就足够使用，但是对于复杂的场景，特征约束可以让我们拥有更大的灵活性和语法表现能力，例如一个函数接受两个 `impl Summary` 的参数：
 
@@ -574,8 +562,6 @@ pub fn notify<T: Summary>(item1: &T, item2: &T) {}
 ```
 
 泛型类型 `T` 说明了 `item1` 和 `item2` 必须拥有同样的类型，同时 `T: Summary` 说明了 `T` 必须实现 `Summary` 特征。
-
-
 
 ### 多重约束
 
@@ -593,8 +579,6 @@ pub fn notify<T: Summary + Display>(item: &T) {}
 
 通过这两个特征，就可以使用 `item.summarize` 方法，以及通过 `println!("{}", item)` 来格式化输出 `item`。
 
-
-
 ### Where 约束
 
 当特征约束变得很多时，函数的签名将变得很复杂：
@@ -611,8 +595,6 @@ fn some_function<T, U>(t: &T, u: &U) -> i32
           U: Clone + Debug
 {
 ```
-
-
 
 ### 使用特征约束有条件地实现方法或特征
 
@@ -648,8 +630,6 @@ impl<T: Display + PartialOrd> Pair<T> {
 
 `cmd_display` 方法，并不是所有的 `Pair<T>` 结构体对象都可以拥有，只有 `T` 同时实现了 `Display + PartialOrd` 的 `Pair<T>` 才可以拥有此方法。
 
-
-
 **也可以有条件地实现特征**, 例如，标准库为任何实现了 `Display` 特征的类型实现了 `ToString` 特征：
 
 ```rust
@@ -663,8 +643,6 @@ impl<T: Display> ToString for T {
 ```rust
 let s = 3.to_string();   
 ```
-
-
 
 ## 函数返回中的 impl Trait
 
@@ -686,8 +664,6 @@ fn returns_summarizable() -> impl Summary {
 这种 `impl Trait` 形式的返回值，在一种场景下非常非常有用，那就是返回的真实类型非常复杂，你不知道该怎么声明时(毕竟 Rust 要求你必须标出所有的类型)，此时就可以用 `impl Trait` 的方式简单返回。
 
 例如，闭包和迭代器就是很复杂，可以用 `impl Iterator` 来告诉调用者，返回了一个迭代器，因为所有迭代器都会实现 `Iterator` 特征。
-
-
 
 但是这种返回值方式有一个很大的限制：只能有一个具体的类型，例如：
 
@@ -723,8 +699,6 @@ expected struct `Post`, found struct `Weibo`
 ```
 
 报错提示我们 `if` 和 `else` 返回了不同的类型。如果想要实现返回不同的类型，需要使用下一章节中的**特征对象**。
-
-
 
 ## 修复上一节中的largest函数
 
@@ -802,8 +776,6 @@ fn main() {
 
 另一种 `largest` 的实现方式是返回在 `list` 中 `T` 值的引用。如果我们将函数返回值从 `T` 改为 `&T` 并改变函数体使其能够返回一个引用，我们将不需要任何 `Clone` 或 `Copy` 的特征约束而且也不会有任何的堆分配。
 
-
-
 ## 通过derive派生特征
 
 在之前的代码中，形如 `#[derive(Debug)]` 的代码已经出现了很多次，这种是一种特征派生语法，被 `derive` 标记的对象会自动实现对应的默认特征代码，继承相应的功能。
@@ -813,8 +785,6 @@ fn main() {
 再如 `Copy` 特征，它也有一套自动实现的默认代码，当标记到一个类型上时，可以让这个类型自动实现 `Copy` 特征，进而可以调用 `copy` 方法，进行自我复制。
 
 总之，`derive` 派生出来的是 Rust 默认给我们提供的特征，在开发过程中极大的简化了自己手动实现相应特征的需求，当然，如果有特殊的需求，还可以手动重载该实现。
-
-
 
 ## 调用方法需要引入特征
 
@@ -839,8 +809,6 @@ fn main() {
 上面代码中引入了 `std::convert::TryInto` 特征，但是却没有使用它，看上去有些困惑，主要原因在于**如果要使用一个特征的方法，那么你需要引入该特征到当前的作用域中**，我们在上面用到了 `try_into` 方法，因此需要引入对应的特征。
 
 但是 Rust 又提供了一个非常便利的办法，即把最常用的标准库中的特征通过 `std::prelude` 模块提前引入到当前作用域中，其中包括了 `std::convert::TryInto`，因此删除第一行的代码 `use ...`，也不会报错。
-
-
 
 ## 几个综合例子
 
@@ -883,8 +851,6 @@ fn main() {
     println!("{:?}", add(p3, p4));
 }
 ```
-
-
 
 ### 自定义类型的打印输出
 
@@ -957,11 +923,177 @@ fn main() {
 
 
 
+# 特征对象 Trait Object
+
+上节中有段代码无法编译：
+
+```rust
+fn returns_summarizable(switch: bool) -> impl Summary {
+    if switch {
+        Post {
+           // ...
+        }
+    } else {
+        Weibo {
+            // ...
+        }
+    }
+}
+```
+
+其中 `Post` 和 `Weibo` 都实现了 `Summary` 特征，因此上面的函数试图通过返回 `impl Summary` 来返回这两个类型，但是编译器却无情地报错了，原因是 `impl Trait` 的返回值类型并不支持多种不同的类型返回。
 
 
 
+为了解决上面问题，Rust通过引入：**特征对象(trait object)**
+
+**特征对象**指向实现了特征的类型的实例，这种映射关系是存储在一张表中，可以在运行时通过特征对象找到具体调用的类型方法。
+
+可以通过 `&` 引用或者 `Box<T>` 智能指针的方式来创建特征对象:
+
+```rust
+trait Draw {
+    fn draw(&self) -> String;
+}
+
+impl Draw for u8 {
+    fn draw(&self) -> String {
+        format!("u8: {}", *self)
+    }
+}
+
+impl Draw for f64 {
+    fn draw(&self) -> String {
+        format!("f64: {}", *self)
+    }
+}
+
+fn draw1(x: Box<dyn Draw>) {
+    x.draw();
+}
+
+fn draw2(x: &dyn Draw) {
+    x.draw();
+}
+
+fn main() {
+    let x = 1.1f64;
+    // do_something(&x);
+    let y = 8u8;
+
+    draw1(Box::new(x));
+    draw1(Box::new(y));
+    draw2(&x);
+    draw2(&y);
+}
+
+```
+
+上面代码，有几个非常重要的点：
+
+- `draw1` 函数的参数是 `Box<dyn Draw>` 形式的特征对象，该特征对象是通过 `Box::new(x)` 的方式创建的
+- `draw2` 函数的参数是 `&dyn Draw` 形式的特征对象，该特征对象是通过 `&x` 的方式创建的
+- `dyn` 关键字只用在特征对象的类型声明上，在创建时无需使用 `dyn`
 
 
+
+## 特征对象的动态分发
+
+泛型是在编译期完成处理的：编译器会为每一个泛型参数对应的具体类型生成一份代码，这种方式是**静态分发(static dispatch)**，因为是在编译期完成的，对于运行期性能完全没有任何影响。
+
+与静态分发相对应的是**动态分发(dynamic dispatch)**，在这种情况下，直到运行时，才能确定需要调用什么对象的什么方法。之前代码中的关键字 `dyn` 正是在强调这一“动态”的特点。
+
+当使用特征对象时，Rust 必须使用动态分发。下面这张图很好的解释了静态分发 `Box<T>` 和动态分发 `Box<dyn Trait>` 的区别：
+
+![](https://pic1.zhimg.com/80/v2-b771fe4cfc6ebd63d9aff42840eb8e67_1440w.jpg)
+
+结合上文的内容和这张图可以了解：
+
+- **特征对象大小不固定**：这是因为特征对象可能是具体的不同类型，因此特征没有固定大小
+- **几乎总是使用特征对象的引用方式**，如 `&dyn Draw`、`Box<dyn Draw>`
+  - 虽然特征对象没有固定大小，但它的引用类型的大小是固定的，它由两个指针组成（`ptr` 和 `vptr`），因此占用两个指针大小
+  - 一个指针 `ptr` 指向实现了特征 `Draw` 的具体类型的实例，也就是当作特征 `Draw` 来用的类型的实例，比如类型 `Button` 的实例、类型 `SelectBox` 的实例
+  - 另一个指针 `vptr` 指向一个虚表 `vtable`，`vtable` 中保存了类型 `Button` 或类型 `SelectBox` 的实例对于可以调用的实现于特征 `Draw` 的方法。当调用方法时，直接从 `vtable` 中找到方法并调用。之所以要使用一个 `vtable` 来保存各实例的方法，是因为实现了特征 `Draw` 的类型有多种，这些类型拥有的方法各不相同，当将这些类型的实例都当作特征 `Draw` 来使用时(此时，它们全都看作是特征 `Draw` 类型的实例)，有必要区分这些实例各自有哪些方法可调用
+
+一定要注意，此时的 `btn` 是 `Draw` 的特征对象的实例，而不再是具体类型 `Button` 的实例，而且 `btn` 的 `vtable` 只包含了实现自特征 `Draw` 的那些方法（比如 `draw`），因此 `btn` 只能调用实现于特征 `Draw` 的 `draw` 方法，而不能调用类型 `Button` 本身实现的方法和类型 `Button` 实现于其他特征的方法。**也就是说，`btn` 是哪个特征对象的实例，它的 `vtable` 中就包含了该特征的方法。**
+
+
+
+## Self 与 self
+
+在 Rust 中，有两个`self`，一个指代当前的实例对象，一个指代特征或者方法类型的别名：
+
+```rust
+trait Draw {
+    fn draw(&self) -> Self;
+}
+
+#[derive(Clone)]
+struct Button;
+impl Draw for Button {
+    fn draw(&self) -> Self {
+        return self.clone()
+    }
+}
+
+fn main() {
+    let button = Button;
+    let newb = button.draw();
+}
+
+```
+
+当理解了 `self` 与 `Self` 的区别后，再来看看何为对象安全。
+
+
+
+## 特征对象的限制
+
+不是所有特征都能拥有特征对象，只有对象安全的特征才行。当一个特征的所有方法都有如下属性时，它的对象才是安全的：
+
+- 方法的返回类型不能是 `Self`
+- 方法没有任何泛型参数
+
+对象安全对于特征对象是必须的，因为一旦有了特征对象，就不再需要知道实现该特征的具体类型是什么了。如果特征方法返回了具体的 `Self` 类型，但是特征对象忘记了其真正的类型，那这个 `Self` 就非常尴尬，因为没人知道它是谁了。
+
+但是对于泛型类型参数来说，当使用特征时其会放入具体的类型参数：此具体类型变成了实现该特征的类型的一部分。而当使用特征对象时其具体类型被抹去了，故而无从得知放入泛型参数类型到底是什么。
+
+标准库中的 `Clone` 特征就不符合对象安全的要求：
+
+```rust
+pub trait Clone {
+    fn clone(&self) -> Self;
+}
+```
+
+
+
+如果违反了对象安全的规则，编译器会提示你。例如，如果尝试使用之前的 `Screen` 结构体来存放实现了 `Clone` 特征的类型：
+
+```rust
+pub struct Screen {
+    pub components: Vec<Box<dyn Clone>>,
+}
+```
+
+将会得到如下错误：
+
+```rust
+error[E0038]: the trait `std::clone::Clone` cannot be made into an object
+ --> src/lib.rs:2:5
+  |
+2 |     pub components: Vec<Box<dyn Clone>>,
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `std::clone::Clone`
+  cannot be made into an object
+  |
+  = note: the trait cannot require that `Self : Sized`
+```
+
+这意味着不能以这种方式使用此特征作为特征对象。
+
+
+
+# 进一步深入特征
 
 
 
