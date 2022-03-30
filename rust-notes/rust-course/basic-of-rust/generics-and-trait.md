@@ -921,8 +921,6 @@ fn main() {
 }
 ```
 
-
-
 # 特征对象 Trait Object
 
 上节中有段代码无法编译：
@@ -942,8 +940,6 @@ fn returns_summarizable(switch: bool) -> impl Summary {
 ```
 
 其中 `Post` 和 `Weibo` 都实现了 `Summary` 特征，因此上面的函数试图通过返回 `impl Summary` 来返回这两个类型，但是编译器却无情地报错了，原因是 `impl Trait` 的返回值类型并不支持多种不同的类型返回。
-
-
 
 为了解决上面问题，Rust通过引入：**特征对象(trait object)**
 
@@ -986,7 +982,6 @@ fn main() {
     draw2(&x);
     draw2(&y);
 }
-
 ```
 
 上面代码，有几个非常重要的点：
@@ -994,8 +989,6 @@ fn main() {
 - `draw1` 函数的参数是 `Box<dyn Draw>` 形式的特征对象，该特征对象是通过 `Box::new(x)` 的方式创建的
 - `draw2` 函数的参数是 `&dyn Draw` 形式的特征对象，该特征对象是通过 `&x` 的方式创建的
 - `dyn` 关键字只用在特征对象的类型声明上，在创建时无需使用 `dyn`
-
-
 
 ## 特征对象的动态分发
 
@@ -1016,8 +1009,6 @@ fn main() {
   - 另一个指针 `vptr` 指向一个虚表 `vtable`，`vtable` 中保存了类型 `Button` 或类型 `SelectBox` 的实例对于可以调用的实现于特征 `Draw` 的方法。当调用方法时，直接从 `vtable` 中找到方法并调用。之所以要使用一个 `vtable` 来保存各实例的方法，是因为实现了特征 `Draw` 的类型有多种，这些类型拥有的方法各不相同，当将这些类型的实例都当作特征 `Draw` 来使用时(此时，它们全都看作是特征 `Draw` 类型的实例)，有必要区分这些实例各自有哪些方法可调用
 
 一定要注意，此时的 `btn` 是 `Draw` 的特征对象的实例，而不再是具体类型 `Button` 的实例，而且 `btn` 的 `vtable` 只包含了实现自特征 `Draw` 的那些方法（比如 `draw`），因此 `btn` 只能调用实现于特征 `Draw` 的 `draw` 方法，而不能调用类型 `Button` 本身实现的方法和类型 `Button` 实现于其他特征的方法。**也就是说，`btn` 是哪个特征对象的实例，它的 `vtable` 中就包含了该特征的方法。**
-
-
 
 ## Self 与 self
 
@@ -1040,12 +1031,9 @@ fn main() {
     let button = Button;
     let newb = button.draw();
 }
-
 ```
 
 当理解了 `self` 与 `Self` 的区别后，再来看看何为对象安全。
-
-
 
 ## 特征对象的限制
 
@@ -1065,8 +1053,6 @@ pub trait Clone {
     fn clone(&self) -> Self;
 }
 ```
-
-
 
 如果违反了对象安全的规则，编译器会提示你。例如，如果尝试使用之前的 `Screen` 结构体来存放实现了 `Clone` 特征的类型：
 
@@ -1091,8 +1077,6 @@ error[E0038]: the trait `std::clone::Clone` cannot be made into an object
 
 这意味着不能以这种方式使用此特征作为特征对象。
 
-
-
 # 进一步深入特征
 
 ## 关联类型
@@ -1105,14 +1089,11 @@ pub trait Iterator {
 
     fn next(&mut self) -> Option<Self::Item>;
 }
-
 ```
 
 以上是标准库中的迭代器特征 `Iterator`，它有一个 `Item` 关联类型，用于替代遍历的值的类型。
 
 同时，`next` 方法也返回了一个 `Item` 类型，不过使用 `Option` 枚举进行了包裹，假如迭代器中的值是 `i32` 类型，那么调用 `next` 方法就将获取一个 `Option<i32>` 的值。
-
-
 
 还记得 `Self` 吧？**`Self` 用来指代当前调用者的具体类型，那么 `Self::Item` 就用来指代该类型实现中定义的 `Item` 类型**：
 
@@ -1130,8 +1111,6 @@ fn main() {
     c.next()
 }
 ```
-
-
 
 这里有个疑问？为何不用泛型，例如如下代码：
 
@@ -1175,8 +1154,6 @@ trait Container{
 
 fn difference<C: Container>(container: &C) {}
 ```
-
-
 
 ## 默认泛型类型参数
 
@@ -1244,8 +1221,6 @@ impl Add<Meters> for Millimeters {
 1. 减少实现的样板代码
 2. 扩展类型但是无需大幅修改现有的代码
 
-
-
 ## 调用同名的方法
 
 不同特征拥有同名的方法是很正常的事情；甚至除了特征上的同名方法外，在你的类型上，也有同名方法：
@@ -1302,7 +1277,6 @@ impl Human {
       Wizard::fly(&person); // 调用Wizard特征上的方法
       person.fly(); // 调用Human类型自身的方法
   }输出：
-  
   ```
   
   输出：
@@ -1333,32 +1307,27 @@ impl Human {
           String::from("puppy")
       }
   }
-  
   ```
-  
-  
   
   **完全限定语法**：完全限定语法是调用函数最为明确的方式：
-  
-  ```rust
-  fn main() {
-      println!("A baby dog is called a {}", <Dog as Animal>::baby_name());
-  }
-  ```
-  
+
+```rust
+fn main() {
+    println!("A baby dog is called a {}", <Dog as Animal>::baby_name());
+}
+```
+
   在尖括号中，通过 `as` 关键字，向 Rust 编译器提供了类型注解，也就是 `Animal` 就是 `Dog`，而不是其他动物，因此最终会调用 `impl Animal for Dog` 中的方法，获取到其它动物对狗宝宝的称呼：**puppy**。
-  
+
   完全限定语法定义为：
-  
-  ```rust
-  <Type as Trait>::function(receiver_if_method, next_arg, ...);
-  ```
-  
+
+```rust
+<Type as Trait>::function(receiver_if_method, next_arg, ...);
+```
+
   上面定义中，第一个参数是方法接收器 `receiver` （三种 `self`），只有方法才拥有，例如关联函数就没有 `receiver`。
-  
+
   完全限定语法可以用于任何函数或方法调用，那么为何很少用到这个语法？原因是 Rust 编译器能根据上下文自动推导出调用的路径，因此大多数时候，我们都无需使用完全限定语法。
-
-
 
 ## 特征定义中的特征约束
 
@@ -1413,8 +1382,6 @@ impl fmt::Display for Point {
 
 上面代码为 `Point` 实现了 `Display` 特征，那么 `to_string` 方法也将自动实现：最终获得字符串是通过这里的 `fmt` 方法获得的。
 
-
-
 ## 在外部类型上实现外部特征(newtype)
 
 在特征章节中，提高过孤儿规则，简单来说，就是特征或者类型必需至少有一个是本地的，才能在此类型上定义特征。
@@ -1456,8 +1423,6 @@ fn main() {
     println!("w = {}", w);
 }
 ```
-
-
 
 既然 `new type` 有这么多好处，它有没有不好的地方呢？答案是肯定的。注意到怎么访问里面的数组吗？`self.0.join(", ")`，是的，很啰嗦，因为需要先从 `Wrapper` 中取出数组: `self.0`，然后才能执行 `join` 方法。
 
