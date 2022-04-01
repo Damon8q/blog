@@ -19,6 +19,7 @@ Rust语言圣经是一本开源书籍，涵盖从入门到精通所需的全部 
 * [方法 Method](./basic-of-rust/method.md)
 * [泛型和特征](./basic-of-rust/generics-and-trait.md)
 * [集合类型](./basic-of-rust/collections.md)
+* [类型转换](./basic-of-rust/converse.md)
 
 ## 3. Rust高级进阶
 
