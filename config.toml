@@ -20,7 +20,7 @@ enableEmoji = true
   # DoIt 主题版本
   version = "0.2.X"
   # 网站名称
-  title = "Nange的博客"
+  title = "nange的博客"
   # 网站描述
   description = "nange的博客，作为自己的学习和产出记录地。"
   # 网站关键词
@@ -99,7 +99,7 @@ enableEmoji = true
       # LOGO 的 URL
       logo = ""
       # 标题名称
-      name = "Nange的博客"
+      name = "nange的博客"
       # 你可以在名称 (允许 HTML 格式) 之前添加其他信息, 例如图标
       pre = ""
       # 你可以在名称 (允许 HTML 格式) 之后添加其他信息, 例如图标
