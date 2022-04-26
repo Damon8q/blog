@@ -26,3 +26,8 @@ _testmain.go
 # goland
 .idea
 target
+
+# Hugo
+public/
+resources/
+.hugo_build.lock

@@ -1,0 +1,3 @@
+[submodule "nange/themes/DoIt"]
+	path = nange/themes/DoIt
+	url = https://github.com/HEIGE-PCloud/DoIt.git
