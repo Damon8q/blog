@@ -33,11 +33,25 @@ enableEmoji = true
   # ("sha256", "sha384", "sha512", "md5")
   fingerprint = ""
   # DoIt 新增 | 0.2.0 日期格式
-  dateFormat = "2006-01-02 15:04:05"
+  dateFormat = "2006-01-02 15:04  "
   # 网站图片, 用于 Open Graph 和 Twitter Cards
   images = ["/android-chrome-192x192.png"]
   # DoIt 新增 | 0.2.11 开启 PWA 支持
   enablePWA = false
+
+  [params.typeit]
+    # typing speed between each step (measured in milliseconds)
+    # 每一步的打字速度 (单位是毫秒)
+    speed = 100
+    # blinking speed of the cursor (measured in milliseconds)
+    # 光标的闪烁速度 (单位是毫秒)
+    cursorSpeed = 1000
+    # character used for the cursor (HTML format is supported)
+    # 光标的字符 (支持 HTML 格式)
+    cursorChar = "|"
+    # cursor duration after typing finishing (measured in milliseconds, "-1" means unlimited)
+    # 打字结束之后光标的持续时间 (单位是毫秒, "-1" 代表无限大)
+    duration = -1
 
   # DoIt 新增 | 0.2.0 应用图标配置
   [params.app]
@@ -58,7 +72,7 @@ enableEmoji = true
     # 搜索引擎的类型 ("lunr", "algolia", "fuse")
     type = "fuse"
     # 文章内容最长索引长度
-    contentLength = 8000
+    contentLength = 4000
     # 搜索框的占位提示语
     placeholder = "输入查询内容"
     # DoIt 新增 | 0.2.1 最大结果数目
@@ -250,6 +264,17 @@ enableEmoji = true
     [params.page.table]
       # 是否开启表格排序
       sort = true
+    [params.page.header]
+    # whether to enable auto header numbering
+    # 是否开启标题自动编号
+      [params.page.header.number]
+        enable = true
+        [params.page.header.number.format]
+          h2 = "{h2} {title}"
+          h3 = "{h2}.{h3} {title}"
+          h4 = "{h2}.{h3}.{h4} {title}"
+          h5 = "{h2}.{h3}.{h4}.{h5} {title}"
+          h6 = "{h2}.{h3}.{h4}.{h5}.{h6} {title}"
     # DoIt 更改 | 0.2.0 KaTeX 数学公式
     [params.page.math]
       enable = true
@@ -356,13 +381,21 @@ enableEmoji = true
 
 [menu]
   [[menu.main]]
+    identifier = "今天学"
+    pre = ""
+    post = ""
+    name = "#今天学"
+    url = "/今天学/"
+    title = ""
+    weight = 1
+  [[menu.main]]
     identifier = "categories"
     pre = ""
     post = ""
     name = "分类"
     url = "/categories/"
     title = ""
-    weight = 1
+    weight = 2
   [[menu.main]]
     identifier = "series"
     pre = ""
@@ -370,7 +403,7 @@ enableEmoji = true
     name = "系列"
     url = "/series/"
     title = ""
-    weight = 2
+    weight = 3
   [[menu.main]]
     identifier = "tags"
     pre = ""
@@ -378,7 +411,7 @@ enableEmoji = true
     name = "标签"
     url = "/tags/"
     title = ""
-    weight = 3
+    weight = 4
   [[menu.main]]
     identifier = "posts"
     # 你可以在名称 (允许 HTML 格式) 之前添加其他信息, 例如图标
@@ -389,7 +422,7 @@ enableEmoji = true
     url = "/posts/"
     # 当你鼠标悬停在此菜单链接上时, 将显示的标题
     title = ""
-    weight = 4
+    weight = 5
   [[menu.main]]
     identifier = "about"
     pre = ""
@@ -397,7 +430,7 @@ enableEmoji = true
     name = "关于我"
     url = "/about/"
     title = ""
-    weight = 5
+    weight = 6
 
 # 作者配置
 [author]

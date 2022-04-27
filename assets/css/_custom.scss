@@ -1,6 +1,13 @@
 .single {
   .single-title {
-    font-size: 1.8rem !important;
+    font-size: 1.8rem;
   }
 }
 
+.home[posts] {
+  .summary {
+    .single-title {
+      font-size: 1.4rem;
+    }
+  }
+}
