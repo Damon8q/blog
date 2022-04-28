@@ -1,5 +1,5 @@
 ---
-title: "[Rust course]-01 变量绑定与解构"
+title: "[Rust course]-01 基础入门-变量绑定与解构"
 date: 2022-04-27T16:49:00+08:00
 lastmod: 2022-04-27T16:49:00+08:00
 author: nange
