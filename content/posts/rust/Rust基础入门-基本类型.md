@@ -8,8 +8,8 @@ description: "基本类型"
 
 categories: ["rust"]
 series: ["rust-course"]
+series_weight: 2
 tags: ["rust-notes"]
-lightgallery: true
 ---
 
 ## 基本类型

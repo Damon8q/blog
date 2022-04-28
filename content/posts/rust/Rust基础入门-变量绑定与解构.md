@@ -8,8 +8,8 @@ description: "变量"
 
 categories: ["rust"]
 series: ["rust-course"]
+series_weight: 1
 tags: ["rust-notes"]
-lightgallery: true
 ---
 
 ## 为何需要手动设置变量的可变性

@@ -8,8 +8,8 @@ description: "所有权和借用"
 
 categories: ["rust"]
 series: ["rust-course"]
+series_weight: 3
 tags: ["rust-notes"]
-lightgallery: true
 ---
 
 ## 所有权和借用

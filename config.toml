@@ -16,7 +16,7 @@ enableGitInfo = true
 
 enableEmoji = true
 
-summaryLength = 140
+summaryLength = 100
 
 [params]
   # DoIt 主题版本
@@ -30,7 +30,7 @@ summaryLength = 140
   # DoIt 更改 | 0.2.11 网站默认主题样式 ("light", "dark", "black", "auto")
   defaultTheme = "auto"
   # 公共 git 仓库路径, 仅在 enableGitInfo 设为 true 时有效
-  gitRepo = "https://github.com/nange/nange.github.io"
+  gitRepo = "https://github.com/nange/nange.github.io.git"
   # DoIt 新增 | 0.1.1 哪种哈希函数用来 SRI, 为空时表示不使用 SRI
   # ("sha256", "sha384", "sha512", "md5")
   fingerprint = ""
