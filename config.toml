@@ -383,11 +383,11 @@ summaryLength = 100
 
 [menu]
   [[menu.main]]
-    identifier = "today_learning"
+    identifier = "today-learning"
     pre = ""
     post = ""
     name = "#今天学"
-    url = "/today_learning/"
+    url = "/today-learning/"
     title = ""
     weight = 1
   [[menu.main]]
