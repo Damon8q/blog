@@ -1,7 +1,7 @@
 ---
 title: "[Rust course]-08 基础入门-泛型(generics)和特征(trait)"
-date: 2022-05-06T17:22:00+08:00
-lastmod: 2022-05-06T17:22:00+08:00
+date: 2022-05-06T17:32:00+08:00
+lastmod: 2022-05-06T17:32:00+08:00
 author: nange
 draft: false
 description: "Rust模式匹配"
