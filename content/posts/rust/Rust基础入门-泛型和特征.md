@@ -1012,7 +1012,7 @@ fn main() {
 
 当使用特征对象时，Rust 必须使用动态分发。下面这张图很好的解释了静态分发 `Box<T>` 和动态分发 `Box<dyn Trait>` 的区别：
 
-![](https://pic1.zhimg.com/80/v2-b771fe4cfc6ebd63d9aff42840eb8e67_1440w.jpg)
+![img](/images/type_layout.jpg)
 
 结合上文的内容和这张图可以了解：
 
