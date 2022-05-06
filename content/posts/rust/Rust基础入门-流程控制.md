@@ -8,7 +8,7 @@ description: "Rust流程控制"
 
 categories: ["rust"]
 series: ["rust-course"]
-series_weight: 4
+series_weight: 5
 tags: ["rust-notes"]
 ---
 
@@ -16,7 +16,7 @@ tags: ["rust-notes"]
 
 Rust程序是从上而下顺序执行的，在此过程中，我们可以通过循环、分支等流程控制方式，更好的实现相应的功能。
 
-### 使用`if`做分支控制
+### 使用 `if` 做分支控制
 
 ```rust
 fn main() {
