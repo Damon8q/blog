@@ -396,19 +396,202 @@ fn exec<F: Fn()>(f: F)  {
 
 #### 三种Fn的关系
 
+当创建一个闭包时，Rust 根据其如何使用环境中变量来推断闭包该实现哪个trait。由于所有闭包都可以被调用至少一次，因此所有闭包都实现了 `FnOnce` 。那些并没有移动被捕获变量的所有权到闭包内的闭包也实现了 `FnMut` ，而不需要对被捕获的变量进行可变访问的闭包则实现了 `Fn` 。 
+
+> 注意：即使使用了`move`捕获变量，闭包也可能实现了`Fn`或者`FnMut`，这是因为闭包实现哪个trait是由闭包怎么使用捕获到的变量决定的，而不是如何捕获变量决定。`move`关键字仅仅代表了后者。
+
+可能有个疑问，为什么所有闭包都要实现`FnOnce`,也就是这样的层级关系：`Fn` -> `FnMut` -> `FnOnce`？让三个trait是平级的关系岂不是更清晰易懂？ 仔细思考就会发现，这三个trait在逻辑上其实就存在包含关系。`FnOnce`代表能且只能调用一次，显然`Fn`,`FnMut`对象，都能满足此要求，实现这个接口很容易，也就是`FnOnce`约束的地方，放上`Fn`,`FnMut`对象，完全可以；其次`FnMut`约束代表，具有能够改变环境变量的能力，也即对应`&mut self`，而实现`Fn`trait的对象完全可以实现`FnMut`，只是内部没有去改变环境变量而已（就像`&mut self`的方法内部，也可以不做修改嘛），因此`FnMut`约束的地方，放上`Fn`对象也完全可以。
+
+一段代码来解释上述内容：
+
+```rust
+fn main() {
+    let s = String::new();
+
+    let update_string =  || println!("{}",s);
+
+    exec(update_string);
+    exec1(update_string);
+    exec2(update_string);
+}
+
+fn exec<F: FnOnce()>(f: F)  {
+    f()
+}
+
+fn exec1<F: FnMut()>(mut f: F)  {
+    f()
+}
+
+fn exec2<F: Fn()>(f: F)  {
+    f()
+}
+```
+
+虽然，闭包只是对 `s` 进行了不可变借用，实际上，它可以适用于任何一种 `Fn` 特征：三个 `exec` 函数说明了一切。
+
+再看一个示例：
+
+```rust
+fn main() {
+    let mut s = String::new();
+
+    let update_string = |str| -> String {s.push_str(str); s };
+
+    exec(update_string);
+}
+
+fn exec<'a, F: FnMut(&'a str) -> String>(mut f: F) {
+    f("hello");
+}
+```
+
+运行：
+
+```rust
+5 |     let update_string = |str| -> String {s.push_str(str); s };
+  |                         ^^^^^^^^^^^^^^^                   - closure is `FnOnce` because it moves the variable `s` out of its environment
+  |                                                           // 闭包实现了`FnOnce`，因为它从捕获环境中移出了变量`s`
+  |                         |
+  |                         this closure implements `FnOnce`, not `FnMut`
+```
+
+此例中，闭包从捕获环境中移出了变量 `s` 的所有权，因此这个闭包仅自动实现了 `FnOnce`，未实现 `FnMut` 和 `Fn`。再次印证之前讲的**一个闭包实现了哪种 Fn 特征取决于该闭包如何使用被捕获的变量，而不是取决于闭包如何捕获它们**，跟是否使用 `move` 没有必然联系。
+
+有个疑问是上面代码不是也对变量`s`做了修改吗？ 为啥没有实现`FnMut`呢？ 原因就在于其先对`s`做了所有权转移，已经是在闭包内部修改`s`了，而不是修改原来环境里面的变量（修改环境变量应该对应`&mut self`，不会发生所有权转移），比如我们修改如下就正常编译：
+
+```rust
+fn main() {
+    let mut s = String::new();
+
+    let update_string = |str| -> String {
+        let s = &mut s;
+        s.push_str(str);
+        s.to_string()
+    };
+
+    exec(update_string);
+}
+
+fn exec<'a, F: FnMut(&'a str) -> String>(mut f: F) {
+    f("hello");
+}
+```
 
 
 
+可进一步看看三个特征的简化版源码：
+
+```rust
+pub trait Fn<Args> : FnMut<Args> {
+    extern "rust-call" fn call(&self, args: Args) -> Self::Output;
+}
+
+pub trait FnMut<Args> : FnOnce<Args> {
+    extern "rust-call" fn call_mut(&mut self, args: Args) -> Self::Output;
+}
+
+pub trait FnOnce<Args> {
+    type Output;
+
+    extern "rust-call" fn call_once(self, args: Args) -> Self::Output;
+}
+```
+
+从特征约束能看出来 `Fn` 的前提是实现 `FnMut`，`FnMut` 的前提是实现 `FnOnce`，因此要实现 `Fn` 就要同时实现 `FnMut` 和 `FnOnce`，这段源码从侧面印证了之前规则的正确性。从源码中也能看出：`Fn` 获取 `&self`，`FnMut` 获取 `&mut self`，而 `FnOnce` 获取 `self`。
 
 
 
+### 闭包作为函数返回值
 
+先看一段代码：
 
+```rust
+fn factory() -> Fn(i32) -> i32 {
+    let num = 5;
 
+    |x| x + num
+}
 
+fn main() {
+    let f = factory();
 
+    let answer = f(1);
+    assert_eq!(6, answer);
+}
+```
 
+上面这段代码看起来还是蛮正常的，用 `Fn(i32) -> i32` 特征来代表 `|x| x + num`，非常合理嘛, 可惜理想总是难以照进现实，编译器给我们报了一大堆错误，先挑几个重点来看看：
 
+```rust
+fn factory<T>() -> Fn(i32) -> i32 {
+  |                    ^^^^^^^^^^^^^^ doesn't have a size known at compile-time // 该类型在编译器没有固定的大小
+```
 
+Rust 要求函数的参数和返回类型，必须有固定的内存大小，例如 `i32` 就是 4 个字节，引用类型是 8 个字节，总之，绝大部分类型都有固定的大小，但是不包括特征，因为特征类似接口，对于编译器来说，无法知道它后面藏的真实类型是什么，因为也无法得知具体的大小。
 
+同样，我们也无法知道闭包的具体类型，该怎么办呢？再看看报错提示：
 
+```rust
+help: use `impl Fn(i32) -> i32` as the return type, as all return paths are of type `[closure@src/main.rs:11:5: 11:21]`, which implements `Fn(i32) -> i32`
+  |
+8 | fn factory<T>() -> impl Fn(i32) -> i32 {
+```
+
+嗯，编译器提示我们加一个 `impl` 关键字，哦，这样一说，读者可能就想起来了，`impl Trait` 可以用来返回一个实现了指定特征的类型，那么这里 `impl Fn(i32) -> i32` 的返回值形式，说明我们要返回一个闭包类型，它实现了 `Fn(i32) -> i32` 特征。
+
+完美解决，但是，在[特征](https://nange.github.io/posts/2022/05/rust%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8-%E6%B3%9B%E5%9E%8B%E5%92%8C%E7%89%B9%E5%BE%81/#%E5%87%BD%E6%95%B0%E8%BF%94%E5%9B%9E%E4%B8%AD%E7%9A%84-impl-trait)那一章，我们提到过，`impl Trait` 的返回方式有一个非常大的局限，就是你只能返回同样的类型，例如：
+
+```rust
+fn factory(x:i32) -> impl Fn(i32) -> i32 {
+
+    let num = 5;
+
+    if x > 1{
+        move |x| x + num
+    } else {
+        move |x| x - num
+    }
+}
+```
+
+编译器报错：
+
+```rust
+error[E0308]: `if` and `else` have incompatible types
+  --> src/main.rs:15:9
+   |
+12 | /     if x > 1{
+13 | |         move |x| x + num
+   | |         ---------------- expected because of this
+14 | |     } else {
+15 | |         move |x| x - num
+   | |         ^^^^^^^^^^^^^^^^ expected closure, found a different closure
+16 | |     }
+   | |_____- `if` and `else` have incompatible types
+   |
+```
+
+本章节前面有提到：就算签名一样的闭包，类型也是不同的，因此在这种情况下，就无法再使用 `impl Trait` 的方式去返回闭包。
+
+怎么办？再看看编译器提示，里面有这样一行小字：
+
+```rust
+= help: consider boxing your closure and/or using it as a trait object
+```
+
+可以用特征对象！只需要用 `Box` 的方式即可实现：
+
+```rust
+fn factory(x:i32) -> Box<dyn Fn(i32) -> i32> {
+    let num = 5;
+
+    if x > 1 {
+        Box::new(move |x| x + num)
+    } else {
+        Box::new(move |x| x - num)
+    }
+}
+```
+
+至此，闭包作为函数返回值就已完美解决。
