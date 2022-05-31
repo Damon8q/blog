@@ -322,11 +322,127 @@ fn generic<T: ?Sized>(t: &T) {
 
 使用 `Box` 可以将一个动态大小的特征变成一个具有固定大小的特征对象，能否故技重施，将 `str` 封装成一个固定大小类型？
 
-TODO: 这部分，感觉书上写的有些问题。 需要自己再查找资料，重写一下。
+先回想下，章节前面的内容介绍过该如何把一个动态大小类型转换成固定大小的类型： **使用引用指向这些动态数据，然后在引用中存储相关的内存位置、长度等信息**。
+
+根据这个，我们可以推测：首先，`Box<str>` 使用了一个引用来指向 `str`，嗯，满足了第一个条件。但是第二个条件呢？`Box` 中有该 `str` 的长度信息吗？暂时不知道，我们用具体代码来验证：
+
+```rust
+let string: Box<str> = Box::new("banana");
+```
+
+运行：
+
+```rust
+|     let string: Box<str> = Box::new("banana");
+|                 --------   ^^^^^^^^^^^^^^^^^^ expected `str`, found `&str`
+|                 |
+|                 expected due to this
+|
+= note: expected struct `Box<str>`
+found struct `Box<&str>`
+```
+
+看上去，`Box::new("banana")`返回的是`Box<&str>`而不是`Box<str>`；也许我们可以解引用字符串字面量来变成`Box<str>`？：
+
+```rust
+let string: Box<str> = Box::new(*"banana");
+```
+
+运行：
+
+```rust
+|     let string: Box<str> = Box::new(*"banana");
+|                            -------- ^^^^^^^^^ doesn't have a size known at compile-time
+|                            |
+|                            required by a bound introduced by this call
+|
+= help: the trait `Sized` is not implemented for `str`
+```
+
+我们无法获得DST类型的所有权，因为其大小未知。解引用会获得指针指向数据的所有权。
+
+直接`Box::new`的方式不行，好在可以通过另外的方式实现：
+
+```rust
+let string: Box<str> = String::from("banana").into_boxed_str();
+// or
+let string: Box<str> = Box::from("banana");
+```
+
+通过`from`的形式可以将字符串字面量转变为`Box<str>`，这样就能通过编译。
+
+来看看`Box`类型变量所占内存大小：
+
+```rust
+use std::error::Error;
+
+fn main() {
+    // Prints 8, 8, 8, 16, 16, 16
+    println!(
+        "{}, {}, {}, {}, {}, {}",
+        std::mem::size_of::<Box<i8>>(),
+        std::mem::size_of::<Box<&[i8]>>(),
+        std::mem::size_of::<Box<&str>>(),
+        std::mem::size_of::<Box<[i8]>>(),
+        std::mem::size_of::<Box<str>>(),
+        std::mem::size_of::<Box<dyn Error>>(),
+    );
+}
+```
+
+从上面打印结果可以看出，`Box`类型的引用，对于`Sized`类型，其大小为`8`（单纯的一个指针大小），对于DST类型，其大小为`16`，多出来的8字节是什么呢？
+
+在Rust中，一个指针一般来说其大小等于：`size_of::<usize>()`，但对于DST类型的指针是个例外。目前一个`Box<DST>`类型的大小是：`2 * size_of::<usize>()`。一个DST类型的指针也叫`胖指针(FatPtr)`。
+
+目前，有两种类型的DST: slices(切片)和traits(特征)。一个`胖指针(FatPtr)`的定义大致如下：
+
+```rust
+struct FatPtr<T> {
+    data: *const T,
+    len: usize,
+}
+```
+
+> 注意： 对于trait类型的胖指针，`len`字段替换为执行`vtable`的一个指针。
+
+到此就可以回答：可以通过`Box`封装`str`对象为`Box<str>`，`Box<str>`指针包含有长度信息。
+
+#### Box<str>有什么用？
+
+标准库已经存在`String`对象，和`Box<str>`一样，它们都是具有所有权的变量。并且`String`对象，功能更加强大，既然这样那`Box<str>`存在的必要性是什么呢？
+
+看如下代码：
+
+```rust
+fn main() {
+    println!("{}", std::mem::size_of::<String>());
+    println!("{}", std::mem::size_of::<Box<str>>());
+}
+```
+
+打印结果：
+
+```rust
+24
+16
+```
+
+可以看出：`Box<str>`比`String`类型，小一个8个字节。`String`存储了：`pointer` + `length` + `capacity`，而`Box<str>`只存储了: `pointer` + `length`。`capacity`可以帮助`String`高效的执行append操作。
+
+在一些罕见的场景可以使用`Box<str>`做一定优化，如当有非常大量的不可变字符串时，标准库中的`interner`就是一个例子：
+
+```rust
+pub struct Interner {
+    names: HashMap<Box<str>, Symbol>,
+    strings: Vec<Box<str>>,
+}
+```
 
 
 
+参考资料：
 
+1. https://betterprogramming.pub/strings-in-rust-28c08a2d3130
 
-
-
+2. https://stackoverflow.com/questions/55814114/why-does-boxt-need-16-bytes-in-memory-but-a-referenced-slice-needs-only-8
+3. https://users.rust-lang.org/t/use-case-for-box-str-and-string/8295/3
