@@ -392,9 +392,9 @@ fn main() {
 
 从上面打印结果可以看出，`Box`类型的引用，对于`Sized`类型，其大小为`8`（单纯的一个指针大小），对于DST类型，其大小为`16`，多出来的8字节是什么呢？
 
-在Rust中，一个指针一般来说其大小等于：`size_of::<usize>()`，但对于DST类型的指针是个例外。目前一个`Box<DST>`类型的大小是：`2 * size_of::<usize>()`。一个DST类型的指针也叫`胖指针(FatPtr)`。
+在Rust中，一个指针一般来说其大小等于：`size_of::<usize>()`，但对于DST类型的指针是个例外。目前一个`Box<DST>`类型的大小是：`2 * size_of::<usize>()`。一个DST类型的Box指针也叫`胖指针(FatPtr)`。
 
-目前，有两种类型的DST: slices(切片)和traits(特征)。一个`胖指针(FatPtr)`的定义大致如下：
+目前，有两种类型的DST: slices(切片)和traits(特征)。其对应的`胖指针(FatPtr)`定义大致如下：
 
 ```rust
 struct FatPtr<T> {
@@ -403,7 +403,7 @@ struct FatPtr<T> {
 }
 ```
 
-> 注意： 对于trait类型的胖指针，`len`字段替换为执行`vtable`的一个指针。
+> 注意： 对于trait类型的胖指针，`len`字段替换为指向`vtable`的一个指针。
 
 到此就可以回答：可以通过`Box`封装`str`对象为`Box<str>`，`Box<str>`指针包含有长度信息。
 
@@ -446,3 +446,214 @@ pub struct Interner {
 
 2. https://stackoverflow.com/questions/55814114/why-does-boxt-need-16-bytes-in-memory-but-a-referenced-slice-needs-only-8
 3. https://users.rust-lang.org/t/use-case-for-box-str-and-string/8295/3
+
+
+
+## 枚举和整数转换
+
+### 一个真实场景的需求
+
+在实际场景中，从枚举到整数的转换有时还是非常需要的，例如你有一个枚举类型，然后需要从外面传入一个整数（为什么不传枚举？？因为用户命令行输入项无法传入枚举），用于控制后续的流程走向，此时就需要用整数去匹配相应的枚举(你也可以用整数匹配整数-, -，看看会不会被喷)。
+
+### C语言的实现
+
+对于 C 语言来说，万物皆邪恶，因此我们不讨论安全，只看实现，不得不说很简洁：
+
+```rust
+#include <stdio.h>
+
+enum atomic_number {
+    HYDROGEN = 1,
+    HELIUM = 2,
+    // ...
+    IRON = 26,
+};
+
+int main(void)
+{
+    enum atomic_number element = 26;
+
+    if (element == IRON) {
+        printf("Beware of Rust!\n");
+    }
+
+    return 0;
+}
+```
+
+但是在 Rust 中，以下代码：
+
+```rust
+enum MyEnum {
+    A = 1,
+    B,
+    C,
+}
+
+fn main() {
+    // 将枚举转换成整数，顺利通过
+    let x = MyEnum::C as i32;
+
+    // let y: MyEnum = 1 as MyEnum; // 报错：an `as` expression can only be used to convert between primitive types or to coerce to a specific trait object
+
+    // 将整数转换为枚举，失败
+    match x {
+        MyEnum::A => {}
+        MyEnum::B => {}
+        MyEnum::C => {}
+        _ => {}
+    }
+}
+```
+
+就会报错: `MyEnum::A => {} mismatched types, expected i32, found enum MyEnum`。
+
+### 使用第三方库
+
+ Rust 的生态目前已经发展的很不错，类似的需求总是有的，这里我们先使用`num-traits`和`num-derive`来试试。
+
+在`Cargo.toml`中引入：
+
+```toml
+[dependencies]
+num-traits = "0.2.14"
+num-derive = "0.3.3"
+```
+
+代码如下:
+
+```rust
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
+#[derive(FromPrimitive)]
+enum MyEnum {
+    A = 1,
+    B,
+    C,
+}
+
+fn main() {
+    let x = 2;
+
+    match FromPrimitive::from_i32(x) {
+        Some(MyEnum::A) => println!("Got A"),
+        Some(MyEnum::B) => println!("Got B"),
+        Some(MyEnum::C) => println!("Got C"),
+        None            => println!("Couldn't convert {}", x),
+    }
+}
+```
+
+除了上面的库，还可以使用一个较新的库: [`num_enums`](https://github.com/illicitonion/num_enum)。
+
+### TryFrom + 宏
+
+在 Rust 1.34 后，可以实现`TryFrom`特征来做转换:
+
+```rust
+use std::convert::TryFrom;
+
+impl TryFrom<i32> for MyEnum {
+    type Error = ();
+
+    fn try_from(v: i32) -> Result<Self, Self::Error> {
+        match v {
+            x if x == MyEnum::A as i32 => Ok(MyEnum::A),
+            x if x == MyEnum::B as i32 => Ok(MyEnum::B),
+            x if x == MyEnum::C as i32 => Ok(MyEnum::C),
+            _ => Err(()),
+        }
+    }
+}
+```
+
+以上代码定义了从`i32`到`MyEnum`的转换，接着就可以使用`TryInto`来实现转换：
+
+```rust
+use std::convert::TryInto;
+
+fn main() {
+    let x = MyEnum::C as i32;
+
+    match x.try_into() {
+        Ok(MyEnum::A) => println!("a"),
+        Ok(MyEnum::B) => println!("b"),
+        Ok(MyEnum::C) => println!("c"),
+        Err(_) => eprintln!("unknown number"),
+    }
+}
+```
+
+但是上面的代码有个问题，需要为每个枚举成员都实现一个转换分支，非常麻烦。好在可以使用宏来简化，自动根据枚举的定义来实现`TryFrom`特征:
+
+```rust
+#[macro_export]
+macro_rules! back_to_enum {
+    ($(#[$meta:meta])* $vis:vis enum $name:ident {
+        $($(#[$vmeta:meta])* $vname:ident $(= $val:expr)?,)*
+    }) => {
+        $(#[$meta])*
+        $vis enum $name {
+            $($(#[$vmeta])* $vname $(= $val)?,)*
+        }
+
+        impl std::convert::TryFrom<i32> for $name {
+            type Error = ();
+
+            fn try_from(v: i32) -> Result<Self, Self::Error> {
+                match v {
+                    $(x if x == $name::$vname as i32 => Ok($name::$vname),)*
+                    _ => Err(()),
+                }
+            }
+        }
+    }
+}
+
+back_to_enum! {
+    enum MyEnum {
+        A = 1,
+        B,
+        C,
+    }
+}
+```
+
+
+
+### 邪恶之王 std::mem::transmute
+
+**这个方法原则上并不推荐，但是有其存在的意义，如果要使用，你需要清晰的知道自己为什么使用**。
+
+当你知道数值一定不会超过枚举的范围时(例如枚举成员对应 1，2，3，传入的整数也在这个范围内)，就可以使用这个方法完成变形。
+
+> 最好使用#[repr(..)]来控制底层类型的大小，免得本来需要 i32，结果传入 i64，最终内存无法对齐，产生奇怪的结果
+
+```rust
+#[repr(i32)]
+enum MyEnum {
+    A = 1, B, C
+}
+
+fn main() {
+    let x = MyEnum::C;
+    let y = x as i32;
+    let z: MyEnum = unsafe { std::mem::transmute(y) };
+
+    // match the enum that came from an int
+    match z {
+        MyEnum::A => { println!("Found A"); }
+        MyEnum::B => { println!("Found B"); }
+        MyEnum::C => { println!("Found C"); }
+    }
+}
+```
+
+### 总结
+
+列举了常用(其实差不多也是全部了，还有一个 unstable 特性没提到)的从整数转换为枚举的方式，推荐度按照出现的先后顺序递减。
+
+但是推荐度最低，不代表它就没有出场的机会，只要使用边界清晰，一样可以大放光彩，例如最后的`transmute`函数。
+
+
