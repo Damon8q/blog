@@ -295,6 +295,20 @@ fn gen_static_str() -> &'static str{
 
 
 
+## Deref解引用
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
