@@ -331,7 +331,37 @@ fn main() {
 
 #### 定义自己的智能指针
 
+实现一个简化版的`Box<T>`智能指针。
 
+```rust
+use std::ops::Deref;
+
+struct MyBox<T>(T);
+
+impl<T> MyBox<T> {
+    fn new(x: T) -> MyBox<T> {
+        MyBox(x)
+    }
+}
+
+impl<T> Deref for MyBox<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+fn main() {
+    let y = MyBox::new(5);
+
+    assert_eq!(5, *y);
+}
+```
+
+### * 背后的原理
+
+当我们对智能指针 `Box` 进行解引用时，实际上 Rust 为我们调用了以下方法：
 
 
 
