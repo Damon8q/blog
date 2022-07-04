@@ -746,7 +746,86 @@ fn main() {
 
 ## Cell和RefCell
 
-TODO：
+Rust 提供了 `Cell` 和 `RefCell` 用于内部可变性，简而言之，可以在拥有不可变引用的同时修改目标数据，对于正常的代码实现来说，这个是不可能做到的（要么一个可变借用，要么多个不可变借用）。
+
+> 内部可变性的实现是因为 Rust 使用了 `unsafe` 来做到这一点，但是对于使用者来说，这些都是透明的，因为这些不安全代码都被封装到了安全的 API 中
+
+### Cell
+
+`Cell` 和 `RefCell` 在功能上没有区别，区别在于 `Cell<T>` 适用于 `T` 实现 `Copy` 的情况：
+
+```rust
+use std::cell::Cell;
+
+fn main() {
+    let c = Cell::new("asdf");
+    let one = c.get();
+    c.set("qwer");
+    let two = c.get();
+    println!("{},{}", one, two);
+}
+```
+
+以上代码展示了 `Cell` 的基本用法，有几点值得注意：
+
+- "asdf" 是 `&str` 类型，它实现了 `Copy` 特征
+- `c.get` 用来取值，`c.set` 用来设置新值
+
+如果尝试在 `Cell` 中存放`String`：
+
+```rust
+ let c = Cell::new(String::from("asdf"));
+```
+
+编译器会立刻报错，因为 `String` 没有实现 `Copy` 特征：
+
+```rust
+| pub struct String {
+| ----------------- doesn't satisfy `String: Copy`
+|
+= note: the following trait bounds were not satisfied:
+        `String: Copy`
+```
+
+### RefCell
+
+要解决可变、不可变引用共存导致的问题，就需要借助于 `RefCell` 来达成目的。
+
+`RefCell` 实际上并没有解决可变引用和引用可以共存的问题，只是将报错从编译期推迟到运行时，从编译器错误变成了 `panic` 异常：
+
+```rust
+use std::cell::RefCell;
+
+fn main() {
+    let s = RefCell::new(String::from("hello, world"));
+    let s1 = s.borrow();
+    let s2 = s.borrow_mut();
+
+    println!("{},{}", s1, s2);
+}
+```
+
+编译正常，但是运行：
+
+```rust
+thread 'main' panicked at 'already borrowed: BorrowMutError', src/main.rs:6:16
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+```
+
+#### RefCell为何存在
+
+既然在运行时会panic，那这么做有任何意义吗？还不如在编译期报错，至少能提前发现问题，而且性能还更好。
+
+究其根因，在于 Rust 编译期的**宁可错杀，绝不放过**的原则，当编译器不能确定你的代码是否正确时，就统统会判定为错误，因此难免会导致一些误报。
+
+而 `RefCell` 正是**用于你确信代码是正确的，而编译器却发生了误判时**。
+
+#### RefCell简单总结
+
+- 与 `Cell` 用于可 `Copy` 的值不同，`RefCell` 用于引用
+- `RefCell` 只是将借用规则从编译期推迟到程序运行期，并不能帮你绕过这个规则
+- `RefCell` 适用于编译期误报或者一个引用被在多处代码使用、修改以至于难于管理借用关系时
+- 使用 `RefCell` 时，违背借用规则会导致运行期的 `panic`
 
 
 
