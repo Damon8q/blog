@@ -1,7 +1,7 @@
 ---
 title: "[Rust course]-18 高级进阶-智能指针"
 date: 2022-06-01T11:35:00+08:00
-lastmod: 2022-06-01T11:35:00+08:00
+lastmod: 2022-07-04T11:35:00+08:00
 author: nange
 draft: false
 description: "Rust智能指针"
@@ -363,15 +363,184 @@ fn main() {
 
 当我们对智能指针 `Box` 进行解引用时，实际上 Rust 为我们调用了以下方法：
 
+```rust
+*(y.deref())
+```
+
+首先调用 `deref` 方法返回值的常规引用，然后通过 `*` 对常规引用进行解引用，最终获取到目标值。
+
+### 函数和方法中的隐式Deref转换
+
+若一个类型实现了 `Deref` 特征，那它的引用在传给函数或方法时，会根据参数签名来决定是否进行隐式的 `Deref` 转换，例如：
+
+```rust
+fn main() {
+    let s = String::from("hello world");
+    display(&s)
+}
+
+fn display(s: &str) {
+    println!("{}",s);
+}
+```
+
+以上代码有几点值得注意：
+
+- `String` 实现了 `Deref` 特征，可以在需要时自动被转换为 `&str` 类型
+- `&s` 是一个 `&String` 类型，当它被传给 `display` 函数时，自动通过 `Deref` 转换成了 `&str`
+- 必须使用 `&s` 的方式来触发 `Deref`(仅引用类型的实参才会触发自动解引用，因为Deref 函数接受的引用类型)
+
+#### 连续的隐式Deref转换
+
+`Deref` 可以支持连续的隐式转换，直到找到适合的形式为止：
+
+```rust
+fn main() {
+    let s = MyBox::new(String::from("hello world"));
+    display(&s)
+}
+
+fn display(s: &str) {
+    println!("{}",s);
+}
+```
+
+这种方式提供了代码编写上的简洁性。但也有其缺点：如果不知道某个类型是否实现了 `Deref` 特征，那么在看到某段代码时，并不能在第一时间反应过来该代码发生了隐式的 `Deref` 转换。事实上，不仅仅是 `Deref`，在 Rust 中还有各种 `From/Into` 等等会给阅读代码带来一定负担的特征。一切选择都是权衡，有得必有失，得了代码的简洁性，往往就失去了可读性，Go 语言就是一个刚好相反的例子。
+
+再来看一下在方法、赋值中自动应用 `Deref` 的例子：
+
+```rust
+fn main() {
+    let s = MyBox::new(String::from("hello, world"));
+    let s1: &str = &s;
+    let s2: String = s.to_string();
+}
+```
 
 
 
+## Drop释放资源
+
+### Rust的资源回收
+
+在 Rust 中，可以指定在一个变量超出作用域时，执行一段特定的代码，最终编译器将自动插入这段收尾代码。这样，就无需在每一个使用该变量的地方，都写一段代码来进行收尾工作和资源释放。
+
+指定这段收尾工作代码就是靠`Drop`特征。
+
+```rust
+struct HasDrop1;
+struct HasDrop2;
+impl Drop for HasDrop1 {
+    fn drop(&mut self) {
+        println!("Dropping HasDrop1!");
+    }
+}
+impl Drop for HasDrop2 {
+    fn drop(&mut self) {
+        println!("Dropping HasDrop2!");
+    }
+}
+struct HasTwoDrops {
+    one: HasDrop1,
+    two: HasDrop2,
+}
+impl Drop for HasTwoDrops {
+    fn drop(&mut self) {
+        println!("Dropping HasTwoDrops!");
+    }
+}
+
+struct Foo;
+
+impl Drop for Foo {
+    fn drop(&mut self) {
+        println!("Dropping Foo!")
+    }
+}
+
+fn main() {
+    let _x = HasTwoDrops {
+        two: HasDrop2,
+        one: HasDrop1,
+    };
+    let _foo = Foo;
+    println!("Running!");
+}
+```
+
+输出：
+
+```rust
+Running!
+Dropping Foo!
+Dropping HasTwoDrops!
+Dropping HasDrop1!
+Dropping HasDrop2!
+```
+
+有几点值得注意：
+
+- `Drop` 特征中的 `drop` 方法借用了目标的可变引用，而不是拿走了所有权
+- 结构体中每个字段都有自己的 `Drop`
+
+#### Drop的顺序
+
+- **变量级别，按照逆序的方式**，`_x` 在 `_foo` 之前创建，因此 `_x` 在 `_foo` 之后被 `drop`
+- **结构体内部，按照顺序的方式**，结构体 `_x` 中的字段按照定义中的顺序依次 `drop`
+
+#### 没有实现Drop的结构体
+
+实际上就算不为 `_x` 结构体实现 `Drop` 特征，它内部的两个字段依然会调用 `drop`。
+
+原因在于，Rust 自动为几乎所有类型都实现了 `Drop` 特征，因此就算不手动为结构体实现 `Drop`，它依然会调用默认实现的 `drop` 函数，同时再调用每个字段的 `drop` 方法。
+
+### Drop使用场景
+
+- 回收内存资源
+- 行一些收尾工作
+
+对于第二点，上面已经详细介绍过，因此这里主要对第一点进行下简单说明。
+
+在绝大多数情况下，我们都无需手动去 `drop` 以回收内存资源，因为 Rust 会自动帮我们完成这些工作，它甚至会对复杂类型的每个字段都单独的调用 `drop` 进行回收！但是确实有极少数情况，需要你自己来回收资源的，例如文件描述符、网络 socket 等，当这些值超出作用域不再使用时，就需要进行关闭以释放相关的资源，在这些情况下，就需要使用者自己来解决 `Drop` 的问题。
+
+### 互斥的Copy和Drop
+
+我们无法为一个类型同时实现 `Copy` 和 `Drop` 特征。因为实现了 `Copy` 的特征会被编译器隐式的复制，因此非常难以预测析构函数执行的时间和频率。因此这些实现了 `Copy` 的类型无法拥有析构函数。
+
+```rust
+#[derive(Copy)]
+struct Foo;
+
+impl Drop for Foo {
+    fn drop(&mut self) {
+        println!("Dropping Foo!")
+    }
+}
+```
+
+以上代码报错如下：
+
+```rust
+error[E0184]: the trait `Copy` may not be implemented for this type; the type has a destructor
+  --> src/main.rs:24:10
+   |
+24 | #[derive(Copy)]
+   |          ^^^^ Copy not allowed on types with destructors
+```
 
 
 
+### 总结
+
+`Drop` 可以用于许多方面，来使得资源清理及收尾工作变得方便和安全！通过 `Drop` 特征和 Rust 所有权系统，你无需担心之后的代码清理，Rust 会自动考虑这些问题。
+
+我们也无需担心意外的清理掉仍在使用的值，这会造成编译器错误：所有权系统确保引用总是有效的，也会确保 `drop` 只会在值不再被使用时被调用一次。
 
 
 
+## Rc与Arc
+
+TODO：
 
 
 
