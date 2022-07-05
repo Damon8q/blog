@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "Rust流程控制"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 5
 tags: ["rust"]

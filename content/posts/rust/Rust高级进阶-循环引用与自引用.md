@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "Rust循环引用与自引用"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 19
 tags: ["rust"]

@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "Rust格式化输出"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 14
 tags: ["rust"]

@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "Rust包和模块"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 12
 tags: ["rust"]

@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "Rust返回值和错误处理"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 11
 tags: ["rust"]

@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "Rust函数式编程"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 16
 tags: ["rust"]

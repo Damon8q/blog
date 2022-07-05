@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "所有权和借用"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 3
 tags: ["rust"]

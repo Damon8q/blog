@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "Rust复合类型"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 4
 tags: ["rust"]

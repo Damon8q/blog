@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "变量"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 1
 tags: ["rust"]
@@ -63,7 +63,7 @@ tags: ["rust"]
 
    ```rust
     const MAX_POINTS: u32 = 100_000;
-    ```
+   ```
 
   * 常量的命名约定是全字母大写，并使用下划线分割，数字可插入下划线提高可读性
 

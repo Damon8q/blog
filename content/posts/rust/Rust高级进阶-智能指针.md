@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "Rust智能指针"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 18
 tags: ["rust"]

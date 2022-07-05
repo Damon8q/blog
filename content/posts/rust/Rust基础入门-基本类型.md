@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "基本类型"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 2
 tags: ["rust"]

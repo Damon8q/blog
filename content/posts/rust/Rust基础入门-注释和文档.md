@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "Rust注释和文档"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 13
 tags: ["rust"]

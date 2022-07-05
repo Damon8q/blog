@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "Rust生命周期"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 15
 tags: ["rust"]

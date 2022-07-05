@@ -6,7 +6,7 @@ author: nange
 draft: false
 description: "Rust模式匹配"
 
-categories: ["编程语言"]
+categories: ["programming"]
 series: ["rust-course"]
 series_weight: 8
 tags: ["rust"]
