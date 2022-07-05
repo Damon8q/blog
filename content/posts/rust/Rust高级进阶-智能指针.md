@@ -827,15 +827,182 @@ note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 - `RefCell` 适用于编译期误报或者一个引用被在多处代码使用、修改以至于难于管理借用关系时
 - 使用 `RefCell` 时，违背借用规则会导致运行期的 `panic`
 
+### 内部可变性
 
+在Rust中，对一个不可变的值进行可变借用是非法的。虽然基本借用规则是 Rust 的基石，然而在某些场景中，一个值可以在其方法内部被修改，同时对于其它代码不可变，是很有用的：
 
+```rust
+// 定义在外部库中的特征
+pub trait Messenger {
+    fn send(&self, msg: String);
+}
 
+// --------------------------
+// 我们的代码中的数据结构和实现
+struct MsgQueue {
+    msg_cache: Vec<String>,
+}
 
+impl Messenger for MsgQueue {
+    fn send(&self, msg: String) {
+        self.msg_cache.push(msg)
+    }
+}
+```
 
+如上所示，外部库中定义了一个消息发送器特征 `Messenger`，它只有一个发送消息的功能：`fn send(&self, msg: String)`，因为发送消息不需要修改自身，因此原作者在定义时，使用了 `&self` 的不可变借用，这个无可厚非。
 
+我们处于性能考虑，想实现一个异步的消息队列，先把消息缓存到本地，然后批量发送出去。但是问题来了，该 `send` 方法的签名是 `&self`，因此上述代码会报错：
 
+```rust
+error[E0596]: cannot borrow `self.msg_cache` as mutable, as it is behind a `&` reference
+  --> src/main.rs:11:9
+   |
+2  |     fn send(&self, msg: String);
+   |             ----- help: consider changing that to be a mutable reference: `&mut self`
+...
+11 |         self.msg_cache.push(msg)
+   |         ^^^^^^^^^^^^^^^^^^ `self` is a `&` reference, so the data it refers to cannot be borrowed as mutable
+```
 
+此时就可以使用`RefCell`来实现：
 
+```rust
+use std::cell::RefCell;
+pub trait Messenger {
+    fn send(&self, msg: String);
+}
 
+pub struct MsgQueue {
+    msg_cache: RefCell<Vec<String>>,
+}
 
+impl Messenger for MsgQueue {
+    fn send(&self, msg: String) {
+        self.msg_cache.borrow_mut().push(msg)
+    }
+}
 
+fn main() {
+    let mq = MsgQueue {
+        msg_cache: RefCell::new(Vec::new()),
+    };
+    mq.send("hello, world".to_string());
+}
+```
+
+### Rc + RefCell 组合使用
+
+在 Rust 中，一个常见的组合就是 `Rc` 和 `RefCell` 在一起使用，前者可以实现一个数据拥有多个所有者，后者可以实现数据的可变性：
+
+```rust
+use std::cell::RefCell;
+use std::rc::Rc;
+fn main() {
+    let s = Rc::new(RefCell::new("我很善变，还拥有多个主人".to_string()));
+
+    let s1 = s.clone();
+    let s2 = s.clone();
+    // let mut s2 = s.borrow_mut();	// 如果打开这个注释，则下面的代码会出现panic
+    s2.borrow_mut().push_str(", on yeah!"); // s2,s1 这样使用不会报错。
+    s1.borrow_mut().push_str(", on yeah!"); // 因为都相当于生成了一个临时变量，用完就销毁了，不会和后面的借用冲突
+
+    println!("{:?}\n{:?}\n{:?}", s, s1, s2);
+}
+```
+
+由于 `Rc` 的所有者们共享同一个底层的数据，因此当一个所有者修改了数据时，会导致全部所有者持有的数据都发生了变化。
+
+#### 性能损耗
+
+- 它们带来的内存和 CPU 损耗都不大
+- 但是由于 `Rc` 额外的引入了一次间接取值（`*`），在少数场景下可能会造成性能上的显著损失
+- CPU 缓存可能不够亲和
+
+### 通过Cell::from_mut 解决借用冲突
+
+在 Rust 1.37 版本中新增了两个非常实用的方法：
+
+- Cell::from_mut，该方法将 `&mut T` 转为 `&Cell<T>`
+- Cell::as_slice_of_cells，该方法将 `&Cell<[T]>` 转为 `&[Cell<T>]`
+
+使用这两个方法来解决一个常见的借用冲突问题：
+
+```rust
+fn is_even(i: i32) -> bool {
+    i % 2 == 0
+}
+
+fn retain_even(nums: &mut Vec<i32>) {
+    let mut i = 0;
+    for num in nums.iter().filter(|&num| is_even(*num)) {
+        nums[i] = *num;
+        i += 1;
+    }
+    nums.truncate(i);
+}
+```
+
+以上代码会报错：
+
+```rust
+error[E0502]: cannot borrow `*nums` as mutable because it is also borrowed as immutable
+ --> src/main.rs:8:9
+  |
+7 |     for num in nums.iter().filter(|&num| is_even(*num)) {
+  |                ----------------------------------------
+  |                |
+  |                immutable borrow occurs here
+  |                immutable borrow later used here
+8 |         nums[i] = *num;
+  |         ^^^^ mutable borrow occurs here
+```
+
+有两种方法可以解决此问题。
+
+* 通过索引方式
+  ```rust
+  fn retain_even(nums: &mut Vec<i32>) {
+      let mut i = 0;
+      for j in 0..nums.len() {
+          if is_even(nums[j]) {
+              nums[i] = nums[j];
+              i += 1;
+          }
+      }
+      nums.truncate(i);
+  }
+  ```
+
+  这样是OK的。但是这样就违背我们的初衷了，毕竟迭代器会让代码更加简洁。 
+
+* 使用Cell新增的两个方法
+  ```rust
+  use std::cell::Cell;
+  
+  fn retain_even(nums: &mut Vec<i32>) {
+      let slice: &[Cell<i32>] = Cell::from_mut(&mut nums[..])
+          .as_slice_of_cells();
+  
+      let mut i = 0;
+      for num in slice.iter().filter(|num| is_even(num.get())) {
+          slice[i].set(num.get());
+          i += 1;
+      }
+      nums.truncate(i);
+  }
+  ```
+
+  此时代码将不会报错，因为 `Cell` 上的 `set` 方法获取的是不可变引用 `pub fn set(&self, val: T)`。
+
+  当然，以上代码的本质还是对 `Cell` 的运用，只不过这两个方法可以很方便的帮我们把 `&mut [T]` 类型转换成 `&[Cell<T>]` 类型。
+
+### 总结
+
+`Cell` 和 `RefCell` 都为我们带来了内部可变性这个重要特性，同时还将借用规则的检查从编译期推迟到运行期，但是这个检查并不能被绕过，该来早晚还是会来，`RefCell` 在运行期的报错会造成 `panic`。
+
+`RefCell` 适用于编译器误报或者一个引用被在多个代码中使用、修改以至于难于管理借用关系时，还有就是需要内部可变性时。
+
+从性能上看，`RefCell` 由于是非线程安全的，因此无需保证原子性，性能虽然有一点损耗，但是依然非常好，而 `Cell` 则完全不存在任何额外的性能损耗。
+
+`Rc` 跟 `RefCell` 结合使用可以实现多个所有者共享同一份数据，非常好用，但是潜在的性能损耗也要考虑进去，对于热点代码使用时，做好 `benchmark`。
