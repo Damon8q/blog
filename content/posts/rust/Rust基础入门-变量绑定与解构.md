@@ -6,10 +6,10 @@ author: nange
 draft: false
 description: "变量"
 
-categories: ["rust"]
+categories: ["编程语言"]
 series: ["rust-course"]
 series_weight: 1
-tags: ["rust-notes"]
+tags: ["rust"]
 ---
 
 ## 为何需要手动设置变量的可变性

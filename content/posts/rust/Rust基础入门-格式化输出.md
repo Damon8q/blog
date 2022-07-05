@@ -6,10 +6,10 @@ author: nange
 draft: false
 description: "Rust格式化输出"
 
-categories: ["rust"]
+categories: ["编程语言"]
 series: ["rust-course"]
 series_weight: 14
-tags: ["rust-notes"]
+tags: ["rust"]
 ---
 
 ## 初印象
@@ -26,9 +26,7 @@ println!("{:04}", 42);             // => "0042" with leading zeros
 
 `println!` 宏接受的是可变参数，第一个参数是一个字符串常量，它表示最终输出字符串的格式，包含其中形如 `{}` 的符号是**占位符**，会被 `println!` 后面的参数依次替换。
 
-
-
-## print!, println!, format!
+## print!, println!, format
 
 用途如下：
 
@@ -48,7 +46,7 @@ fn main() {
 }
 ```
 
-### eprint!, eprintln!
+### eprint!, eprintln
 
 使用方式跟 `print!`，`println!` 很像，但是它们输出到标准错误输出：
 
@@ -57,8 +55,6 @@ eprintln!("Error: Could not complete task")
 ```
 
 它们仅应该被用于输出错误信息和进度信息，其它场景都应该使用 `print!` 系列。
-
-
 
 ## {} 与 {:?}
 
@@ -182,8 +178,6 @@ fn main() {
 
 `数组是：[1, 2, 3]`
 
-
-
 ## 位置参数
 
 除了按照依次顺序使用值去替换占位符之外，还能让指定位置的参数去替换某个占位符，例如 `{1}`，表示用第二个参数替换该占位符(索引从 0 开始)：
@@ -197,8 +191,6 @@ fn main() {
     println!("{1}{}{0}{}", 1, 2); // => 2112
 }
 ```
-
-
 
 ## 具名参数
 
@@ -217,8 +209,6 @@ fn main() {
 ```rust
 println!("{abc} {1}", abc = "def", 2);
 ```
-
-
 
 ## 格式化参数
 
@@ -297,8 +287,6 @@ fn main() {
     println!("Hello {:&<5}!", "x");
 }
 ```
-
-
 
 ### 精度
 
@@ -384,8 +372,6 @@ fn main() {
     // println!("{{ Hello }");
 }
 ```
-
-
 
 ### 在格式化字符串时，捕获环境中的值（Rust 1.58新增）
 

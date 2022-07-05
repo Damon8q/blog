@@ -6,10 +6,10 @@ author: nange
 draft: false
 description: "Rust返回值和错误处理"
 
-categories: ["rust"]
+categories: ["编程语言"]
 series: ["rust-course"]
 series_weight: 11
-tags: ["rust-notes"]
+tags: ["rust"]
 ---
 
 ## 返回值和错误处理
@@ -23,13 +23,11 @@ Rust的错误主要包含两类：
 
 而`Result<T, E>` 对应于可恢复错误，`panic!` 对应于不可恢复错误。
 
-
-
 ## panic深入剖析
 
 对于不可恢复的错误，Rust提供了`panic!`宏，当调用执行该宏时，**程序会打印出一个错误信息，展开报错点往前的函数调用堆栈，最后退出程序**。
 
-### 调用 panic!
+### 调用 panic
 
 ```rust
 fn main() {
@@ -128,8 +126,6 @@ panic = 'abort'
 
 还有一种情况，在展开过程中，如果展开本身 `panic` 了，那展开线程会终止，展开也随之停止。
 
-
-
 ## 返回值 Result 和 ?
 
 对于可恢复的错误，需要使用`Result<T, E>`枚举，其定义如下：
@@ -167,14 +163,12 @@ fn main() {
 
 上面代码在匹配出 `error` 后，又对 `error` 进行了详细的匹配解析，最终结果：
 
-- 如果是文件不存在错误 `ErrorKind::NotFound`，就创建文件，这里创建文件`File::create` 也是返回 `Result`，因此继续用 `match` 对其结果进行处理：创建成功，将新的文件句柄赋值给 `f`，如果失败，则 `panic`
-- 剩下的错误，一律 `panic`
-
-
+* 如果是文件不存在错误 `ErrorKind::NotFound`，就创建文件，这里创建文件`File::create` 也是返回 `Result`，因此继续用 `match` 对其结果进行处理：创建成功，将新的文件句柄赋值给 `f`，如果失败，则 `panic`
+* 剩下的错误，一律 `panic`
 
 ### 失败就panic： unwarp和expect
 
-在不需要处理错误的场景，例如写原型、示例时，或者我们非常确认不会出错时。我们不想使用 `match` 去匹配 `Result<T, E> `以获取其中的 `T` 值，因为 `match` 的穷尽匹配特性，你总要去处理下 `Err` 分支。就可以使用 `unwrap` 和 `expect`。
+在不需要处理错误的场景，例如写原型、示例时，或者我们非常确认不会出错时。我们不想使用 `match` 去匹配 `Result<T, E>`以获取其中的 `T` 值，因为 `match` 的穷尽匹配特性，你总要去处理下 `Err` 分支。就可以使用 `unwrap` 和 `expect`。
 
 它们的作用就是，如果返回成功，就将 `Ok(T)` 中的值取出来，如果失败，就直接 `panic`：
 
@@ -274,7 +268,7 @@ let mut f = match f {
 
 如果结果是 `Ok(T)`，则把 `T` 赋值给 `f`，如果结果是 `Err(E)`，则返回该错误，所以 `?` 特别适合用来传播错误。
 
-虽然 `?` 和 `match` 功能一致，但是事实上 `?` 会更胜一筹。一个设计良好的系统中，肯定有自定义的错误特征，错误之间很可能会存在上下级关系，例如标准库中的 `std::io::Error `和 `std::error::Error`，前者是 IO 相关的错误结构体，后者是一个最最通用的标准错误特征，同时前者实现了后者，因此 `std::io::Error` 可以转换为 `std:error::Error`。
+虽然 `?` 和 `match` 功能一致，但是事实上 `?` 会更胜一筹。一个设计良好的系统中，肯定有自定义的错误特征，错误之间很可能会存在上下级关系，例如标准库中的 `std::io::Error`和 `std::error::Error`，前者是 IO 相关的错误结构体，后者是一个最最通用的标准错误特征，同时前者实现了后者，因此 `std::io::Error` 可以转换为 `std:error::Error`。
 
 明白了以上的错误转换，`?` 的更胜一筹就很好理解了，它可以自动进行类型提升（转换）：
 
@@ -302,8 +296,6 @@ fn read_username_from_file() -> Result<String, io::Error> {
     Ok(s)
 }
 ```
-
-
 
 ##### ?用于Option的返回
 

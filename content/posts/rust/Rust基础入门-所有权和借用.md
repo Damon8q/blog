@@ -6,10 +6,10 @@ author: nange
 draft: false
 description: "所有权和借用"
 
-categories: ["rust"]
+categories: ["编程语言"]
 series: ["rust-course"]
 series_weight: 3
-tags: ["rust-notes"]
+tags: ["rust"]
 ---
 
 ## 所有权和借用

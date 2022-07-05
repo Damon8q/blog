@@ -6,10 +6,10 @@ author: nange
 draft: false
 description: "Rust生命周期"
 
-categories: ["rust"]
+categories: ["编程语言"]
 series: ["rust-course"]
 series_weight: 15
-tags: ["rust-notes"]
+tags: ["rust"]
 ---
 
 ## 认识生命周期
@@ -48,8 +48,6 @@ error[E0597]: `x` does not live long enough // `x` 活得不够久
    |                           - borrow later used here // 对 `x` 的借用在此处被使用
 ```
 
-
-
 ### 借用检查
 
 为了保证 Rust 的所有权和借用的正确性，Rust 使用了一个借用检查器(Borrow checker)，来检查我们程序的借用正确性：
@@ -83,8 +81,6 @@ error[E0597]: `x` does not live long enough // `x` 活得不够久
                           // --+       |
 }                         // ----------+
 ```
-
-
 
 ### 函数中的生命周期
 
@@ -131,8 +127,6 @@ help: consider introducing a named lifetime parameter // 考虑引入一个生�
 就这个函数而言，我们也不知道返回值到底引用哪个，因为一个分支返回 `x`，另一个分支返回 `y`...这可咋办？先来分析下。
 
 编译器的借用检查也无法推导出返回值的生命周期，因为它不知道 `x` 和 `y` 的生命周期跟返回值的生命周期之间的关系是怎样的(说实话，人都搞不清，何况编译器这个大聪明)。因此，这时就回到了文章开头说的内容：在存在多个引用时，编译器有时会无法自动推导生命周期，此时就需要我们手动去标注，通过为参数标注合适的生命周期来帮助编译器进行借用检查的分析。
-
-
 
 ### 生命周期标注语法
 
@@ -264,8 +258,6 @@ fn main() {
 
 生命周期语法用来将函数的多个引用参数和返回值的作用域关联到一起，一旦关联到一起后，Rust 就拥有充分的信息来确保我们的操作是内存安全的。
 
-
-
 ### 结构体中的生命周期
 
 不仅仅函数具有生命周期，结构体其实也有这个概念，只不过我们之前对结构体的使用都停留在非引用类型字段上。
@@ -324,8 +316,6 @@ error[E0597]: `novel` does not live long enough
    |                     - borrow later used here
 ```
 
-
-
 ### 生命周期消除
 
 实际上，对于编译器来说，每一个引用类型都有一个生命周期，那么为什么我们在使用过程中，很多时候无需标注生命周期？例如：
@@ -368,8 +358,6 @@ fn first_word(s: &str) -> &str {
    拥有 `&self` 形式的参数，说明该函数是一个 `方法`，该规则让方法的使用便利度大幅提升。
 
 若一个方法，它的返回值的生命周期就是跟参数 `&self` 的不一样怎么办？答案很简单：手动标注生命周期，因为这些规则只是编译器发现你没有标注生命周期时默认去使用的，当你标注生命周期后，编译器自然会乖乖听你的话。
-
-
 
 ### 方法中的生命周期
 
@@ -485,8 +473,6 @@ impl<'a> ImportantExcerpt<'a> {
 
 总之，实现方法比想象中简单：加一个约束，就能暗示编译器，尽管引用吧，反正我想引用的内容比我活得久，爱咋咋地，我怎么都不会引用到无效的内容！
 
-
-
 ### 静态生命周期
 
 在 Rust 中有一个非常特殊的生命周期，那就是 `'static`，拥有该生命周期的引用可以和整个程序活得一样久。
@@ -507,8 +493,6 @@ let s: &'static str = "我没啥优点，就是活得久，嘿嘿";
 
 - 生命周期 `'static` 意味着能和程序活得一样久，例如字符串字面量和特征对象
 - 实在遇到解决不了的生命周期标注问题，可以尝试 `T: 'static`，有时候它会给你奇迹
-
-
 
 ### 一个复杂的例子
 
@@ -531,8 +515,6 @@ where
     }
 }
 ```
-
-
 
 ## 深入生命周期
 
@@ -657,8 +639,6 @@ error[E0499]: cannot borrow `*map` as mutable more than once at a time
 
 分析代码可知在 `match map.get_mut(&key)` 方法调用完成后，对 `map` 的可变借用就可以结束了。但从报错看来，编译器不太聪明，它认为该借用会持续到整个 `match` 语句块的结束(第 16 行处)，这便造成了后续借用的失败。
 
-
-
 ### 无界生命周期
 
 不安全代码(`unsafe`)经常会凭空产生引用或生命周期，这些生命周期被称为是 **无界(unbound)** 的。
@@ -678,8 +658,6 @@ fn f<'a, T>(x: *const T) -> &'a T {
 可以看出 `'a` 是凭空产生的，因此它是无界生命周期。这种生命周期由于没有受到任何约束，因此它想要多大就多大。
 
 我们在实际应用中，要尽量避免这种无界生命周期。最简单的避免无界生命周期的方式就是在函数声明中运用生命周期消除规则。**若一个输出生命周期被消除了，那么必定因为有一个输入生命周期与之对应**。
-
-
 
 ### 生命周期约束 HRTB
 
@@ -735,8 +713,6 @@ impl<'a: 'b, 'b> ImportantExcerpt<'a> {
 
 上面的例子中必须添加约束 `'a: 'b` 后，才能成功编译，因为 `self.part` 的生命周期与 `self`的生命周期一致，将 `&'a` 类型的生命周期强行转换为 `&'b` 类型，会报错，只有在 `'a` >= `'b` 的情况下，`'a` 才能转换成 `'b`。
 
-
-
 ### 闭包函数的消除规则
 
 一段简单的代码：
@@ -785,8 +761,6 @@ fn main() {
 但是返回值是`&x`时，由于是闭包函数，情况就复杂了，因为闭包函数其上下文非常复杂，有可能只是像普通函数一样调用，也有可能作为一个迭代函数的回调函数调用，如果作为回调函数调用，其生命周期就完全无法预知了，很可能会出现迭代函数调用回调后，将回调函数的值返回出来，但是调用回调函数的输入参数却已经被释放了。Rust作为内存安全的语言，决不能让这种事情发生，所以保守起见，这种闭包函数定义无法通过编译。
 
 因此：**这个问题，可能无法解决，还是老老实实用正常的函数，不要秀闭包了**。
-
-
 
 ### NLL (Non-Lexical Lifetime)
 
@@ -872,8 +846,6 @@ fn read_length(strings: &mut Vec<String>) -> usize {
 
 如上所示，函数体内对参数的二次借用也是典型的 `Reborrow` 场景。
 
-
-
 ### 生命周期消除规则补充
 
 在上一节中，我们介绍了三大基础生命周期消除规则，实际上，随着 Rust 的版本进化，该规则也在不断演进，这里再介绍几个常见的消除规则：
@@ -914,8 +886,6 @@ struct Ref<'a, T> {
 ```
 
 新版本 Rust 中，上面情况中的 `T: 'a` 可以被消除掉，当然，你也可以显式的声明，但是会影响代码可读性。关于类似的场景，Rust 团队计划在未来提供更多的消除规则，但是，你懂的，计划未来就等于未知。
-
-
 
 ### 一个复杂的例子
 
@@ -1024,16 +994,14 @@ fn use_list(list: &List) {
 }
 ```
 
-
-
 ## \'static 和 T: \'static
 
 两个小例子：
 
 ```rust
 fn main() {
-	let mark_twain: &str = "Samuel Clemens"; // 字符串字面值就具有 'static 生命周期
-	print_author(mark_twain);
+ let mark_twain: &str = "Samuel Clemens"; // 字符串字面值就具有 'static 生命周期
+ print_author(mark_twain);
 }
 fn print_author(author: &'static str) {
     println!("{}", author);
@@ -1075,8 +1043,8 @@ fn get_memory_location() -> (usize, usize) {
 }
 
 fn get_str_at_location(pointer: usize, length: usize) -> &'static str {
-  	// 使用裸指针需要 `unsafe{}` 语句块
-  	unsafe { from_utf8_unchecked(from_raw_parts(pointer as *const u8, length)) }
+   // 使用裸指针需要 `unsafe{}` 语句块
+   unsafe { from_utf8_unchecked(from_raw_parts(pointer as *const u8, length)) }
 }
 
 fn main() {
@@ -1177,11 +1145,9 @@ fn main() {
 }
 
 fn static_bound<T: Display + 'static>(t: &T) {
-	println!("{}", t);
+ println!("{}", t);
 }
 ```
-
-
 
 ### static到底针对谁
 

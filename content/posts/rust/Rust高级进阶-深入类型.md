@@ -6,10 +6,10 @@ author: nange
 draft: false
 description: "Rust深入类型"
 
-categories: ["rust"]
+categories: ["编程语言"]
 series: ["rust-course"]
 series_weight: 17
-tags: ["rust-notes"]
+tags: ["rust"]
 ---
 
 Rust 的学习难度之恶名，可能有一半来源于 Rust 的类型系统。本章学习如何创建自定义类型，以及了解何为动态大小的类型。
@@ -438,16 +438,12 @@ pub struct Interner {
 }
 ```
 
-
-
 参考资料：
 
-1. https://betterprogramming.pub/strings-in-rust-28c08a2d3130
+1. <https://betterprogramming.pub/strings-in-rust-28c08a2d3130>
 
-2. https://stackoverflow.com/questions/55814114/why-does-boxt-need-16-bytes-in-memory-but-a-referenced-slice-needs-only-8
-3. https://users.rust-lang.org/t/use-case-for-box-str-and-string/8295/3
-
-
+2. <https://stackoverflow.com/questions/55814114/why-does-boxt-need-16-bytes-in-memory-but-a-referenced-slice-needs-only-8>
+3. <https://users.rust-lang.org/t/use-case-for-box-str-and-string/8295/3>
 
 ## 枚举和整数转换
 
@@ -620,8 +616,6 @@ back_to_enum! {
 }
 ```
 
-
-
 ### 邪恶之王 std::mem::transmute
 
 **这个方法原则上并不推荐，但是有其存在的意义，如果要使用，你需要清晰的知道自己为什么使用**。
@@ -655,5 +649,3 @@ fn main() {
 列举了常用(其实差不多也是全部了，还有一个 unstable 特性没提到)的从整数转换为枚举的方式，推荐度按照出现的先后顺序递减。
 
 但是推荐度最低，不代表它就没有出场的机会，只要使用边界清晰，一样可以大放光彩，例如最后的`transmute`函数。
-
-

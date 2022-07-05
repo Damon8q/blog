@@ -6,10 +6,10 @@ author: nange
 draft: false
 description: "Rust模式匹配"
 
-categories: ["rust"]
+categories: ["编程语言"]
 series: ["rust-course"]
 series_weight: 8
-tags: ["rust-notes"]
+tags: ["rust"]
 ---
 
 ## 泛型(generics) 和 特征(trait)

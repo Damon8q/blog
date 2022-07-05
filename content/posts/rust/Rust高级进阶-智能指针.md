@@ -6,10 +6,10 @@ author: nange
 draft: false
 description: "Rust智能指针"
 
-categories: ["rust"]
+categories: ["编程语言"]
 series: ["rust-course"]
 series_weight: 18
-tags: ["rust-notes"]
+tags: ["rust"]
 ---
 
 在各个编程语言中，指针的概念几乎都是相同的：**指针是一个包含了内存地址的变量，该内存地址引用或者指向了另外的数据**。
@@ -293,8 +293,6 @@ fn gen_static_str() -> &'static str{
 
 一个简单的场景：**需要一个在运行期初始化的值，但是可以全局有效，也就是和整个程序活得一样久**，那么就可以使用 `Box::leak`，例如有一个存储配置的结构体实例，它是在运行期动态插入内容，那么就可以将其转为全局有效，虽然 `Rc/Arc` 也可以实现此功能，但是 `Box::leak` 是性能最高的。
 
-
-
 ## Deref解引用
 
 ### 通过 * 获取引用背后的值
@@ -417,8 +415,6 @@ fn main() {
 }
 ```
 
-
-
 ## Drop释放资源
 
 ### Rust的资源回收
@@ -528,15 +524,11 @@ error[E0184]: the trait `Copy` may not be implemented for this type; the type ha
    |          ^^^^ Copy not allowed on types with destructors
 ```
 
-
-
 ### 总结
 
 `Drop` 可以用于许多方面，来使得资源清理及收尾工作变得方便和安全！通过 `Drop` 特征和 Rust 所有权系统，你无需担心之后的代码清理，Rust 会自动考虑这些问题。
 
 我们也无需担心意外的清理掉仍在使用的值，这会造成编译器错误：所有权系统确保引用总是有效的，也会确保 `drop` 只会在值不再被使用时被调用一次。
-
-
 
 ## Rc与Arc
 
@@ -742,8 +734,6 @@ fn main() {
 
 这两者都是只读的，如果想要实现内部数据可修改，必须配合内部可变性 `RefCell` 或者互斥锁 `Mutex` 来一起使用。
 
-
-
 ## Cell和RefCell
 
 Rust 提供了 `Cell` 和 `RefCell` 用于内部可变性，简而言之，可以在拥有不可变引用的同时修改目标数据，对于正常的代码实现来说，这个是不可能做到的（要么一个可变借用，要么多个不可变借用）。
@@ -903,7 +893,7 @@ fn main() {
 
     let s1 = s.clone();
     let s2 = s.clone();
-    // let mut s2 = s.borrow_mut();	// 如果打开这个注释，则下面的代码会出现panic
+    // let mut s2 = s.borrow_mut(); // 如果打开这个注释，则下面的代码会出现panic
     s2.borrow_mut().push_str(", on yeah!"); // s2,s1 这样使用不会报错。
     s1.borrow_mut().push_str(", on yeah!"); // 因为都相当于生成了一个临时变量，用完就销毁了，不会和后面的借用冲突
 
@@ -960,7 +950,8 @@ error[E0502]: cannot borrow `*nums` as mutable because it is also borrowed as im
 
 有两种方法可以解决此问题。
 
-* 通过索引方式
+- 通过索引方式
+
   ```rust
   fn retain_even(nums: &mut Vec<i32>) {
       let mut i = 0;
@@ -974,9 +965,10 @@ error[E0502]: cannot borrow `*nums` as mutable because it is also borrowed as im
   }
   ```
 
-  这样是OK的。但是这样就违背我们的初衷了，毕竟迭代器会让代码更加简洁。 
+  这样是OK的。但是这样就违背我们的初衷了，毕竟迭代器会让代码更加简洁。
 
-* 使用Cell新增的两个方法
+- 使用Cell新增的两个方法
+
   ```rust
   use std::cell::Cell;
   

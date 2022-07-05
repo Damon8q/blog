@@ -6,10 +6,10 @@ author: nange
 draft: false
 description: "基本类型"
 
-categories: ["rust"]
+categories: ["编程语言"]
 series: ["rust-course"]
 series_weight: 2
-tags: ["rust-notes"]
+tags: ["rust"]
 ---
 
 ## 基本类型

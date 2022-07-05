@@ -6,10 +6,10 @@ author: nange
 draft: false
 description: "Rust集合类型"
 
-categories: ["rust"]
+categories: ["编程语言"]
 series: ["rust-course"]
 series_weight: 9
-tags: ["rust-notes"]
+tags: ["rust"]
 ---
 
 ## 动态数组 Vector
