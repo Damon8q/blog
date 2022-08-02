@@ -1,7 +1,7 @@
 ---
 title: "[Rust course]-20 高级进阶-多线程并发编程"
 date: 2022-07-14T19:48:00+08:00
-lastmod: 2022-07-14T19:48:00+08:00
+lastmod: 2022-08-02T16:40:00+08:00
 author: nange
 draft: false
 description: "Rust多线程并发编程"
@@ -338,9 +338,77 @@ after wait
 
 
 
+### 使用条件控制线程的挂起和执行
 
+条件变量（Condition Variables）经常和`Mutex`一起使用，可以让线程挂起，直到某个条件发生后再继续执行：
 
+```rust
+use std::sync::Arc;
+use std::sync::Condvar;
+use std::sync::Mutex;
+use std::thread;
 
+fn main() {
+    let pair = Arc::new((Mutex::new(false), Condvar::new()));
+    let pair2 = pair.clone();
+
+    thread::spawn(move || {
+        let &(ref lock, ref cvar) = &*pair2;
+        let mut started = lock.lock().unwrap();
+        println!("changing started...");
+
+        *started = true;
+        cvar.notify_one();
+    });
+
+    let &(ref lock, ref cvar) = &*pair;
+    let mut started = lock.lock().unwrap();
+    while !*started {
+        started = cvar.wait(started).unwrap();
+    }
+
+    println!("started changed...");
+}
+```
+
+上述代码流程如下：
+
+1. `main` 线程首先进入 `while` 循环，调用 `wait` 方法挂起等待子线程的通知，并释放了锁 `started`
+2. 子线程获取到锁，并将其修改为 `true`，然后调用条件变量的 `notify_one` 方法来通知主线程继续执行
+
+### 只被调用一次的函数
+
+有时，我们会需要某个函数在多线程环境下只被调用一次，例如初始化全局变量，无论是哪个线程先调用函数来初始化，都会保证全局变量只会被初始化一次，随后的其它线程调用就会忽略该函数：
+
+```rust
+use std::sync::Once;
+use std::thread;
+
+static mut VAL: usize = 0;
+static INIT: Once = Once::new();
+
+fn main() {
+    let handle1 = thread::spawn(move || {
+        INIT.call_once(|| unsafe {
+            VAL = 1;
+        });
+    });
+    let handle2 = thread::spawn(move || {
+        INIT.call_once(|| unsafe {
+            VAL = 2;
+        });
+    });
+
+    handle1.join().unwrap();
+    handle2.join().unwrap();
+
+    println!("{}", unsafe { VAL });
+}
+```
+
+代码运行的结果取决于哪个线程先调用 `INIT.call_once` （虽然代码具有先后顺序，但是线程的初始化顺序并无法被保证！因为线程初始化是异步的，且耗时较久），若 `handle1` 先，则输出 `1`，否则输出 `2`。
+
+**call_once 方法：** 执行初始化过程一次，并且只执行一次。如果当前有另一个初始化过程正在运行，线程将阻止该方法被调用。当这个函数返回时，保证初始化已经运行并完成，它还保证所执行的任何内存写入都能被其他线程在这时可靠地观察到。
 
 
 
