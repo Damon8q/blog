@@ -1,7 +1,7 @@
 ---
 title: "[Rust course]-20 高级进阶-多线程并发编程"
 date: 2022-07-14T19:48:00+08:00
-lastmod: 2022-08-02T16:40:00+08:00
+lastmod: 2022-08-09T18:40:00+08:00
 author: nange
 draft: false
 description: "Rust多线程并发编程"
@@ -412,7 +412,295 @@ fn main() {
 
 
 
+## 线程同步：消息传递
 
+### 多发送者，单接受者
+
+标准库提供了通道`std::sync::mpsc`，其中`mpsc`是*multiple producer, single consumer*的缩写，看一个例子：
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+
+fn main() {
+    // 创建一个消息通道, 返回一个元组：(发送者，接收者)
+    let (tx, rx) = mpsc::channel();
+
+    // 创建线程，并发送消息
+    thread::spawn(move || {
+        // 发送一个数字1, send方法返回Result<T,E>，通过unwrap进行快速错误处理
+        tx.send(1).unwrap();
+
+        // 下面代码将报错，因为编译器自动推导出通道传递的值是i32类型，那么Option<i32>类型将产生不匹配错误
+        // tx.send(Some(1)).unwrap()
+    });
+	
+    // 在主线程中接收子线程发送的消息并输出
+    println!("receive {}", rx.recv().unwrap());
+}
+```
+
+在注释中提到`send`方法返回一个`Result<T,E>`，说明它有可能返回一个错误，例如接收者被`drop`导致了发送的值不会被任何人接收，此时继续发送毫无意义，因此返回一个错误最为合适，在代码中我们仅仅使用`unwrap`进行了快速处理，但在实际项目中需要对错误进行进一步的处理。
+
+同样的，对于`recv`方法来说，当发送者关闭时，它也会接收到一个错误，用于说明不会再有任何值被发送过来。
+
+注意：`send`方法不会阻塞当前线程，即使接受者还未开始接收消息。而`recv`会阻塞当前线程，知道读取到值，或者通道关闭。
+
+### 不阻塞的 try_recv 方法
+
+除了上述`recv`方法，还可以使用`try_recv`尝试接收一次消息，该方法并**不会阻塞线程**，当通道中没有消息时，它会立刻返回一个错误：
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+
+fn main() {
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        tx.send(1).unwrap();
+    });
+
+    println!("receive {:?}", rx.try_recv());
+}
+```
+
+由于子线程的创建需要时间，因此`println!`和`try_recv`方法会先执行，而此时子线程的**消息还未被发出**。此次读取最终会报错:
+
+```rust
+receive Err(Empty)
+```
+
+### 传输具有所有权的数据
+
+使用通道来传输数据，一样要遵循 Rust 的所有权规则：
+
+- 若值的类型实现了`Copy`特征，则直接复制一份该值，然后传输过去，例如之前的`i32`类型
+- 若值没有实现`Copy`，则它的所有权会被转移给接收端，在发送端继续使用该值将报错
+
+看看第二种情况:
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+
+fn main() {
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        let s = String::from("我，飞走咯!");
+        tx.send(s).unwrap();
+        println!("val is {}", s);
+    });
+
+    let received = rx.recv().unwrap();
+    println!("Got: {}", received);
+}
+```
+
+编译报错：
+
+```rust
+error[E0382]: borrow of moved value: `s`
+  --> src/main.rs:10:31
+   |
+8  |         let s = String::from("我，飞走咯!");
+   |             - move occurs because `s` has type `String`, which does not implement the `Copy` trait // 所有权被转移，由于`String`没有实现`Copy`特征
+9  |         tx.send(s).unwrap();
+   |                 - value moved here // 所有权被转移走
+10 |         println!("val is {}", s);
+   |                               ^ value borrowed here after move // 所有权被转移后，依然对s进行了借用
+```
+
+### 使用 for 循环接收
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+
+fn main() {
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("hi"),
+            String::from("from"),
+            String::from("the"),
+            String::from("thread"),
+        ];
+        for val in vals {
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    for received in rx {
+        println!("Got: {}", received);
+    }
+}
+```
+
+当子线程运行完成时，发送者`tx`会随之被`drop`，此时`for`循环将被终止，最终`main`线程成功结束。
+
+#### 使用多发送者
+
+由于子线程会拿走发送者的所有权，因此我们必须对发送者进行克隆，然后让每个线程拿走它的一份拷贝:
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+
+fn main() {
+    let (tx, rx) = mpsc::channel();
+    let tx1 = tx.clone();
+    thread::spawn(move || {
+        tx.send(String::from("hi from raw tx")).unwrap();
+    });
+
+    thread::spawn(move || {
+        tx1.send(String::from("hi from cloned tx")).unwrap();
+    });
+
+    for received in rx {
+        println!("Got: {}", received);
+    }
+}
+```
+
+有几点需要注意:
+
+- 需要所有的发送者都被`drop`掉后，接收者`rx`才会收到错误，进而跳出`for`循环，最终结束主线程
+- 这里虽然用了`clone`但是并不会影响性能，因为它并不在热点代码路径中，仅仅会被执行一次
+- 由于两个子线程谁先创建完成是未知的，因此哪条消息先发送也是未知的，最终主线程的输出顺序也不确定
+
+### 消息顺序
+
+上述第三点的消息顺序仅仅是因为线程创建引起的，并不代表通道中的消息是无序的，对于通道而言，消息的发送顺序和接收顺序是一致的，满足`FIFO`原则(先进先出)。
+
+### 同步和异步通道
+
+Rust 标准库的`mpsc`通道其实分为两种类型：同步和异步。
+
+#### 异步通道
+
+之前我们使用的都是异步通道：无论接收者是否正在接收消息，消息发送者在发送消息时都不会阻塞。不再举例。
+
+#### 同步通道
+
+与异步通道相反，同步通道**发送消息是阻塞的，只有在消息被接收后才解除阻塞**，例如：
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+fn main() {
+    let (tx, rx)= mpsc::sync_channel(0);
+
+    let handle = thread::spawn(move || {
+        println!("发送之前");
+        tx.send(1).unwrap();
+        println!("发送之后");
+    });
+
+    println!("睡眠之前");
+    thread::sleep(Duration::from_secs(3));
+    println!("睡眠之后");
+
+    println!("receive {}", rx.recv().unwrap());
+    handle.join().unwrap();
+}
+```
+
+运行后输出如下：
+
+```rust
+睡眠之前
+发送之前
+//···睡眠3秒
+睡眠之后
+receive 1
+发送之后
+```
+
+#### 消息缓存
+
+上面的代码中，传递了一个参数`0`: `mpsc::sync_channel(0);`，这里的0和go语言中，`chan`的长度有类似的作用。 当通道还未满时，发送就会是异步的，通道满后，再发送就会变为同步。
+
+使用异步消息虽然能非常高效且不会造成发送线程的阻塞，但是存在消息未及时消费，最终内存过大的问题。在实际项目中，可以考虑使用一个带缓冲值的同步通道来避免这种风险。
+
+### 关闭通道
+
+之前我们数次提到了通道关闭，并且提到了当通道关闭后，发送消息或接收消息将会报错。那么如何关闭通道呢？ 很简单：**所有发送者被`drop`或者所有接收者被`drop`后，通道会自动关闭**。
+
+这件事是在编译期实现的，完全没有运行期性能损耗！
+
+### 传输多种类型的数据
+
+之前提到过，一个消息通道只能传输一种类型的数据，如果你想要传输多种类型的数据，可以为每个类型创建一个通道，你也可以使用枚举类型来实现：
+
+```rust
+use std::sync::mpsc::{self, Receiver, Sender};
+
+enum Fruit {
+    Apple(u8),
+    Orange(String)
+}
+
+fn main() {
+    let (tx, rx): (Sender<Fruit>, Receiver<Fruit>) = mpsc::channel();
+
+    tx.send(Fruit::Orange("sweet".to_string())).unwrap();
+    tx.send(Fruit::Apple(2)).unwrap();
+
+    for _ in 0..2 {
+        match rx.recv().unwrap() {
+            Fruit::Apple(count) => println!("received {} apples", count),
+            Fruit::Orange(flavor) => println!("received {} oranges", flavor),
+        }
+    }
+}
+```
+
+如上所示，枚举类型还能让我们带上想要传输的数据，但是有一点需要注意，Rust 会按照枚举中占用内存最大的那个成员进行内存对齐，这意味着就算你传输的是枚举中占用内存最小的成员，它占用的内存依然和最大的成员相同, 因此会造成内存上的浪费。
+
+### 新手容易遇到的坑
+
+```rust
+use std::sync::mpsc;
+fn main() {
+
+    use std::thread;
+
+    let (send, recv) = mpsc::channel();
+    let num_threads = 3;
+    for i in 0..num_threads {
+        let thread_send = send.clone();
+        thread::spawn(move || {
+            thread_send.send(i).unwrap();
+            println!("thread {:?} finished", i);
+        });
+    }
+
+    // 在这里drop send...
+
+    for x in recv {
+        println!("Got: {}", x);
+    }
+    println!("finished iterating");
+}
+```
+
+之前提到，通道关闭的两个条件：发送者全部`drop`或接收者被`drop`，要结束`for`循环显然是要求发送者全部`drop`，但是由于`send`自身没有被`drop`，会导致该循环永远无法结束，最终主线程会一直阻塞。
+
+解决办法很简单，`drop`掉`send`即可：在代码中的注释下面添加一行`drop(send);`。
+
+### mpmc 更好的性能
+
+如果需要 mpmc(多发送者，多接收者)或者需要更高的性能，可以考虑第三方库:
+
+- [**crossbeam-channel**](https://github.com/crossbeam-rs/crossbeam/tree/master/crossbeam-channel), 老牌强库，功能较全，性能较强，之前是独立的库，但是后面合并到了`crossbeam`主仓库中
+- [**flume**](https://github.com/zesterer/flume), 官方给出的性能数据某些场景要比 crossbeam 更好些
 
 
 
