@@ -1,7 +1,7 @@
 ---
 title: "[Rust course]-20 高级进阶-多线程并发编程"
 date: 2022-07-14T19:48:00+08:00
-lastmod: 2022-08-09T18:40:00+08:00
+lastmod: 2022-09-28T18:14:00+08:00
 author: nange
 draft: false
 description: "Rust多线程并发编程"
@@ -701,6 +701,248 @@ fn main() {
 
 - [**crossbeam-channel**](https://github.com/crossbeam-rs/crossbeam/tree/master/crossbeam-channel), 老牌强库，功能较全，性能较强，之前是独立的库，但是后面合并到了`crossbeam`主仓库中
 - [**flume**](https://github.com/zesterer/flume), 官方给出的性能数据某些场景要比 crossbeam 更好些
+
+
+
+## 线程同步：锁、Condvar和信号量
+
+### 互斥锁 Mutex
+
+同一时间只能一个线程访问。
+
+#### 单线程中使用 Mutex
+
+```rust
+use std::sync::Mutex;
+fn main() {
+    // 使用`Mutex`结构体的关联函数创建新的互斥锁实例
+    let m = Mutex::new(5);
+
+    {
+        // 获取锁，然后deref为`m`的引用
+        // lock返回的是Result
+        let mut num = m.lock().unwrap();
+        *num = 6;
+        // 锁自动被drop
+    }
+
+    println!("m = {:?}", m);
+}
+```
+
+数据被`Mutex`所拥有（包裹封装），要访问内部的数据，需要使用方法`m.lock()`向`m`申请一个锁, 该方法会**阻塞当前线程，直到获取到锁**。
+
+**`m.lock()`方法也有可能报错**，例如当前正在持有锁的线程`panic`了。在这种情况下，其它线程不可能再获得锁，因此`lock`方法会返回一个错误。
+
+`m.lock()`返回一个智能指针`MutexGuard<T>`:
+
+- 它实现了`Deref`特征，会被自动解引用后获得一个引用类型，该引用指向`Mutex`内部的数据
+- 它还实现了`Drop`特征，在超出作用域后，自动释放锁，以便其它线程能继续获取锁
+
+如果不注意作用域的使用，或者没有drop，继续调用`m.lock`则会发生死锁，如：
+
+```rust
+use std::sync::Mutex;
+
+fn main() {
+    let m = Mutex::new(5);
+
+    let mut num = m.lock().unwrap();
+    *num = 6;
+    // 锁还没有被 drop 就尝试申请下一个锁，导致主线程阻塞
+    // drop(num); // 手动 drop num ，可以让 num1 申请到下个锁
+    let mut num1 = m.lock().unwrap();
+    *num1 = 7;
+    // drop(num1); // 手动 drop num1 ，观察打印结果的不同
+
+    println!("m = {:?}", m); // 如果没有drop(num1)，则打印不出具体内容，因为被加锁了
+}
+```
+
+#### 多线程中使用 Mutex
+
+```rust
+use std::sync::Arc;
+use std::sync::Mutex;
+use std::thread;
+
+fn main() {
+    // Rc对象是用于单线程使用，而Arc是用于多线程使用
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+
+    for _ in 0..10 {
+        // 每一个线程单独一个counter，因为传递给每个线程是需要独立的所有权的
+        let counter = Arc::clone(&counter);
+
+        let handle = thread::spawn(move || {
+            let mut num = counter.lock().unwrap();
+            *num += 1;
+        });
+
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+
+    println!("Result: {:?}", counter.lock().unwrap());
+}
+```
+
+简单总结：`Rc<T>/RefCell<T>`用于单线程内部可变性， `Arc<T>/Mutex<T>`用于多线程内部可变性。
+
+另外当一个操作试图锁住两个资源，然后两个线程各自获取其中一个锁，并试图获取另一个锁时，就容易造成死锁。
+
+#### try_lock
+
+相比于`lock`方法，`try_lock`不会造成方法的阻塞，如果这次调用无法获取锁，则返回一个Err，相反能正常获取锁，就返回一个`MutexGuard`（智能指针）。
+
+> 一个有趣的命名规则：在 Rust 标准库中，使用`try_xxx`都会尝试进行一次操作，如果无法完成，就立即返回，不会发生阻塞。例如消息传递章节中的`try_recv`以及本章节中的`try_lock`
+
+### 读写锁 RwLock
+
+```rust
+use std::sync::RwLock;
+
+fn main() {
+    let lock = RwLock::new(5);
+
+    // 同时允许多个读
+    {
+        let r1 = lock.read().unwrap();
+        let r2 = lock.read().unwrap();
+        assert_eq!(*r1, 5);
+        assert_eq!(*r2, 5);
+    } // 读锁在这里被drop，释放
+
+    // 同时只允许一个写
+    {
+        let mut w = lock.write().unwrap();
+        *w += 1;
+        assert_eq!(*w, 6);
+
+        // 写锁没释放，发生读，根据文档说，单线程下可能会panic
+        // 但实际测试，并没有panic，而是发生死锁
+        // let r1 = lock.read();
+        // println!("{:?}", r1);
+    } // 写锁在这里被drop，释放
+}
+```
+
+多线程下的使用：
+
+```rust
+use std::sync::Arc;
+use std::sync::RwLock;
+use std::thread;
+use std::time::Duration;
+
+fn main() {
+    let lock = Arc::new(RwLock::new(5));
+    let c_lock = Arc::clone(&lock);
+
+    let num = lock.read().unwrap();
+    assert_eq!(*num, 5);
+
+    let handle = thread::spawn(move || {
+        let mut num = c_lock.write().unwrap();
+        *num += 1;
+    });
+
+    // 注释掉下面这两行的话，会出现死锁。
+    // 因为获取到读锁后，一直没有释放，线程中的写锁将永远处于等待状态
+    drop(num);
+    thread::sleep(Duration::from_millis(1000));
+
+    handle.join().unwrap();
+}
+```
+
+### 用条件变量(Condvar)控制线程的同步
+
+`Mutex`用于解决资源安全访问的问题，但是还需要一个手段来解决资源访问顺序的问题。而 Rust 为我们提供了条件变量(Condition Variables)，它经常和`Mutex`一起使用，可以让线程挂起，直到某个条件发生后再继续执行
+
+```rust
+use std::sync::{Arc, Condvar, Mutex};
+use std::thread;
+use std::time;
+
+fn main() {
+    let pair = Arc::new((Mutex::new(false), Condvar::new()));
+    let pair2 = Arc::clone(&pair);
+
+    thread::spawn(move || {
+        let (lock, cvar) = &*pair2;
+
+        thread::sleep(time::Duration::from_secs(4));
+
+        println!("线程内获取锁");
+        let mut started = lock.lock().unwrap();
+        *started = true;
+		cvar.notify_one();
+        println!("线程内锁被释放");
+    });
+
+    // Wait for the thread to start up.
+    let (lock, cvar) = &*pair;
+    let mut started = lock.lock().unwrap();
+    // As long as the value inside the `Mutex<bool>` is `false`, we wait.
+    while !*started {
+        println!("调用 wait 之前");
+        started = cvar.wait(started).unwrap();
+        println!("接收到 wait 已触发");
+    }
+}
+```
+
+
+
+### 信号量 Semaphore
+
+在多线程中，另一个重要的概念就是信号量，使用它可以让我们精准的控制当前正在运行的任务最大数量。Rust 在标准库中有提供一个[信号量实现](https://doc.rust-lang.org/1.8.0/std/sync/struct.Semaphore.html), 但是由于各种原因这个库现在已经不再推荐使用了，推荐使用`tokio`中提供的`Semaphore`实现: [`tokio::sync::Semaphore`](https://github.com/tokio-rs/tokio/blob/master/tokio/src/sync/semaphore.rs)。
+
+```rust
+use std::sync::Arc;
+use tokio::sync::Semaphore;
+
+#[tokio::main]
+async fn main() {
+    let semaphore = Arc::new(Semaphore::new(3));
+    let mut join_handles = Vec::new();
+
+    for _ in 0..5 {
+        let permit = semaphore.clone().acquire_owned().await.unwrap();
+        join_handles.push(tokio::spawn(async move {
+            //
+            // 在这里执行任务...
+            //
+            drop(permit);
+        }));
+    }
+
+    for handle in join_handles {
+        handle.await.unwrap();
+    }
+}
+```
+
+上面代码创建了一个容量为 3 的信号量，当正在执行的任务超过 3 时，剩下的任务需要等待正在执行任务完成并减少信号量后到 3 以内时，才能继续执行。
+
+这里的关键在于：信号量的申请和归还，使用前需要申请信号量，如果容量满了，就需要等待；使用后需要释放信号量，以便其它等待者可以继续。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
