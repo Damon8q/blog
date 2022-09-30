@@ -934,6 +934,80 @@ async fn main() {
 
 
 
+## 线程同步：Atomic原子类型与内存顺序
+
+原子指的是一系列不可被 CPU 上下文交换的机器指令，这些指令组合在一起就形成了原子操作。在多核 CPU 下，当某个 CPU 核心开始运行原子操作时，会先暂停其它 CPU 内核对内存的操作，以保证原子操作不会被其它 CPU 内核所干扰。
+
+由于原子操作是通过指令提供的支持，因此它的性能相比锁和消息传递会好很多。原子类型是无锁类型，但是无锁不代表无需等待，因为原子类型内部使用了`CAS`循环，当大量的冲突发生时，同样会发生等待。
+
+### 使用 Atomic 作为全局变量
+
+```rust
+use std::ops::Sub;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::thread::{self, JoinHandle};
+use std::time::Instant;
+
+const N_TIMES: u64 = 10000000;
+const N_THREADS: usize = 10;
+
+static R: AtomicU64 = AtomicU64::new(0);
+
+fn add_n_times(n: u64) -> JoinHandle<()> {
+    thread::spawn(move || {
+        for _ in 0..n {
+            R.fetch_add(1, Ordering::Relaxed);
+        }
+    })
+}
+
+fn main() {
+    let s = Instant::now();
+    let mut threads = Vec::with_capacity(N_THREADS);
+
+    for _ in 0..N_THREADS {
+        threads.push(add_n_times(N_TIMES));
+    }
+
+    for thread in threads {
+        thread.join().unwrap();
+    }
+
+    assert_eq!(N_TIMES * N_THREADS as u64, R.load(Ordering::Relaxed));
+
+    println!("{:?}",Instant::now().sub(s));
+}
+
+```
+
+### 内存顺序
+
+内存顺序是指 CPU 在访问内存时的顺序，该顺序可能受以下因素的影响：
+
+- 代码中的先后顺序
+- 编译器优化导致在编译阶段发生改变(内存重排序 reordering)
+- 运行阶段因 CPU 的缓存机制导致顺序被打乱
+
+由此可见，CPU访问内存的顺序是非常不确定的，因此就可以明白为什么 Rust 提供了`Ordering::Relaxed`用于限定内存顺序了，事实上，该枚举有 5 个成员:
+
+- **Relaxed**， 这是最宽松的规则，它对编译器和 CPU 不做任何限制，可以乱序
+- **Release 释放**，设定内存屏障(Memory barrier)，保证它之前的操作永远在它之前，但是它后面的操作可能被重排到它前面
+- **Acquire 获取**, 设定内存屏障，保证在它之后的访问永远在它之后，但是它之前的操作却有可能被重排到它后面，往往和`Release`在不同线程中联合使用
+- **AcqRel**, 是 *Acquire* 和 *Release* 的结合，同时拥有它们俩提供的保证。比如你要对一个 `atomic` 自增 1，同时希望该操作之前和之后的读取或写入操作不会被重新排序。
+- **SeqCst 顺序一致性**， `SeqCst`就像是`AcqRel`的加强版，它不管原子操作是属于读取还是写入的操作，只要某个线程有用到`SeqCst`的原子操作，线程中该`SeqCst`操作前的数据操作绝对不会被重新排在该`SeqCst`操作之后，且该`SeqCst`操作后的数据操作也绝对不会被重新排在`SeqCst`操作前。
+
+### Atomic能替代锁吗
+
+答案是不行：
+
+- 对于复杂的场景下，锁的使用简单粗暴，不容易有坑
+- `std::sync::atomic`包中仅提供了数值类型的原子操作：`AtomicBool`, `AtomicIsize`, `AtomicUsize`, `AtomicI8`, `AtomicU16`等，而锁可以应用于各种类型
+- 在有些情况下，必须使用锁来配合，例如上一章节中使用`Mutex`配合`Condvar`
+
+
+
+
+
 
 
 
