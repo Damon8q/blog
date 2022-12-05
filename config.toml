@@ -129,10 +129,10 @@ summaryLength = 100
     # DoIt 新增 | 0.2.0 自定义内容 (支持 HTML 格式)
     custom = ''
     # DoIt 新增 | 0.2.0 是否显示 Hugo 和主题信息
-    hugo = true
+    hugo = false
     # DoIt 新增 | 0.2.14 托管服务信息 (支持 HTML 格式)
     # <a title="Github Pages" href="https://docs.github.com/en/pages/" target="_blank" rel="noopener noreffer">GitHub Pages</a>
-    hostedOn = '<a title="Github Pages" href="https://docs.github.com/en/pages/" target="_blank" rel="noopener noreffer">GitHub Pages</a>' 
+    hostedOn = ''
     # DoIt 新增 | 0.2.0 是否显示版权信息
     copyright = true
     # DoIt 新增 | 0.2.0 是否显示作者
@@ -345,7 +345,7 @@ summaryLength = 100
 
   # DoIt 新增 | 0.2.7 Cookie 许可配置
   [params.cookieconsent]
-    enable = true
+    enable = false
     # 用于 Cookie 许可横幅的文本字符串
     [params.cookieconsent.content]
       message = ""
