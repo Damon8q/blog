@@ -386,9 +386,9 @@ summaryLength = 100
     identifier = "today-learning"
     pre = ""
     post = ""
-    name = "#今天学"
-    url = "/today-learning/"
-    title = ""
+    name = "笔记本(Logseq)"
+    url = "https://nange.github.io/nange"
+    title = "记录学习笔记"
     weight = 1
   [[menu.main]]
     identifier = "categories"
