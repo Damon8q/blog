@@ -387,7 +387,7 @@ summaryLength = 100
     pre = ""
     post = ""
     name = "#笔记(Logseq)"
-    url = "https://nange.github.io/nange"
+    url = "http://note.nange.me"
     title = "记录学习笔记"
     weight = 1
   [[menu.main]]
