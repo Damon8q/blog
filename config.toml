@@ -319,17 +319,25 @@ summaryLength = 100
       # Disqus 评论系统设置
       [params.page.comment.disqus]
         # DoIt 新增 | 0.1.1
-        enable = true
+        enable = false
         # Disqus 的 shortname, 用来在文章中启用 Disqus 评论系统
         shortname = "nange-blog"
       # Gitalk 评论系统设置
-      [params.page.comment.gitalk]
-        # DoIt 新增 | 0.1.1
-        enable = false
-        owner = ""
-        repo = ""
-        clientId = ""
-        clientSecret = ""
+      [params.page.comment.giscus]
+        enable = true
+        # owner/repo
+        dataRepo = "nange/nange.github.io"
+        dataRepoId = "MDEwOlJlcG9zaXRvcnk4MzYyNjA5MQ=="
+        dataCategory = "Announcements"
+        dataCategoryId = "DIC_kwDOBPwIa84CO0uS"
+        dataMapping = "pathname"
+        dataStrict = "0"
+        dataReactionsEnabled = "1"
+        dataEmitMetadata = "0"
+        dataInputPosition = "bottom"
+        lightTheme = "light"
+        darkTheme = "dark"
+        dataLang = "en"
 
   # DoIt 新增 | 0.2.0 网站分析配置
   [params.analytics]
