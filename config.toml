@@ -16,7 +16,7 @@ enableGitInfo = true
 
 enableEmoji = true
 
-summaryLength = 50
+summaryLength = 32
 
 [params]
   # DoIt 主题版本
